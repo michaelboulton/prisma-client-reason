@@ -1,7 +1,7 @@
 import { DMMF } from '@prisma/generator-helper';
 import { upperFirst, camelCase } from 'lodash';
 
-export const toPrimitiveType = (type: string) => {
+export const toPrimitiveType = (type: string, relation?: string) => {
   switch (type) {
     case 'Int':
       return 'int';
@@ -14,6 +14,14 @@ export const toPrimitiveType = (type: string) => {
     case 'DateTime':
       return 'string';
     default:
+      if (type == "FindMany" && typeof relation !== "undefined"){
+        const stripped = relation.match(/([A-Z][a-z]+)/)
+        if (! stripped){
+          // FIXME
+          throw new Error("empty relation")
+        }
+        return `Externals.${stripped[0]}.${type}.t`
+      }
       return `${type}.t`;
   }
 };
@@ -27,7 +35,7 @@ export const toObjectKeyValue = (field: DMMF.Field) => {
 };
 
 export const toObjectType = (field: DMMF.Field) => {
-  let type = toPrimitiveType(field.type);
+  let type = toPrimitiveType(field.type, field.relationName);
 
   if (field.isList) {
     type = `list<${type}>`;
@@ -41,7 +49,7 @@ export const toObjectType = (field: DMMF.Field) => {
 };
 
 export const toNamedArgumentType = (field: DMMF.Field) => {
-  let type = toPrimitiveType(field.type);
+  let type = toPrimitiveType(field.type, field.relationName);
 
   if (field.isList) {
     type = `list<${type}>`;
@@ -59,7 +67,7 @@ export const toNamedArgument = (field: DMMF.Field) => {
     return `~${toObjectKey(field)}=?`;
   }
 
-  let type = toPrimitiveType(field.type);
+  let type = toPrimitiveType(field.type, field.relationName);
 
   if (field.isList) {
     type = `list<${type}>`;

@@ -516,7 +516,6 @@ class InputsGenerator {
     const model: DMMF.Model = {
       ...this.model,
       fields: this.model.fields.map((field) => {
-        console.log(field);
         return {
           ...field,
           isRequired:

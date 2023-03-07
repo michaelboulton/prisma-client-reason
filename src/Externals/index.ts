@@ -18,14 +18,14 @@ class ExternalsGenerator {
   private connect = () => {
     return codeBlock`
       @send
-      external connect: (prismaClient) => Promise.t<unit> = "connect";
+      external connect: (prismaClient) => Js.Promise2.t<unit> = "connect";
     `;
   };
 
   private disconnect = () => {
     return codeBlock`
       @send
-      external disconnect: (prismaClient) => Promise.t<unit> = "disconnect";
+      external disconnect: (prismaClient) => Js.Promise2.t<unit> = "disconnect";
     `;
   };
 
@@ -41,7 +41,7 @@ class ExternalsGenerator {
 
         @send @scope("${model.name.toLowerCase()}")
         external make: (prismaClient, t) =>
-          Promise.t<${model.name}.t> = "findOne";
+          Js.Promise2.t<${model.name}.t> = "findOne";
       };
     `;
   };
@@ -64,7 +64,7 @@ class ExternalsGenerator {
 
         @send @scope("${model.name.toLowerCase()}")
         external make: (prismaClient, t) =>
-          Promise.t<array<${model.name}.t>> = "findMany";
+          Js.Promise2.t<array<${model.name}.t>> = "findMany";
       };
     `;
   };
@@ -81,7 +81,7 @@ class ExternalsGenerator {
 
         @send @scope("${model.name.toLowerCase()}")
         external make: (prismaClient, t) =>
-          Promise.t<${model.name}.t> = "create";
+          Js.Promise2.t<${model.name}.t> = "create";
       };
     `;
   };
