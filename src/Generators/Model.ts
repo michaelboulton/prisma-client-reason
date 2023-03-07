@@ -40,7 +40,7 @@ class ModelsGenerator {
           ${hasRelations ? '~include_: Include.t=?,' : ''}
           ~data: CreateInput.t,
           unit
-        ) => Js.Promise2.t<t>;
+        ) => promise<t>;
       `,
       re: codeBlock`
         let create = (
@@ -79,7 +79,7 @@ class ModelsGenerator {
           ~first: int=?,
           ~last: int=?,
           unit
-        ) => Js.Promise2.t<array<t>>;
+        ) => promise<array<t>>;
       `,
       re: codeBlock`
         let findMany = (
