@@ -87,7 +87,7 @@ class ModelsGenerator {
           ~select=?,
           ${hasRelations ? '~include_=?,' : ''}
           ~where=?,
-          ~orderBy=?,
+          // ~orderBy=?,
           ~skip=?,
           ~after=?,
           ~before=?,
@@ -101,7 +101,7 @@ class ModelsGenerator {
               select: select,
               ${hasRelations ? 'include_: include_,' : ''}
               where: where,
-              orderBy: orderBy,
+              // orderBy: orderBy,
               skip: skip,
               after: after,
               before: before,

@@ -100,7 +100,7 @@ class InputsGenerator {
           ~select=?,
           ${this.hasRelations ? '~include_=?,' : ''}
           ~where=?,
-          ~orderBy=?,
+          // ~orderBy=?,
           ~skip=?,
           ~after=?,
           ~before=?,
@@ -111,7 +111,7 @@ class InputsGenerator {
           select: select,
           ${this.hasRelations ? 'include_: include_,' : ''}
           where: where,
-          orderBy: orderBy,
+          // orderBy: orderBy,
           skip: skip,
           after: after,
           before: before,
