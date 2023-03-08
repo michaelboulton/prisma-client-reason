@@ -45,7 +45,13 @@ export const toObjectType = (field: DMMF.Field) => {
     type = `option<${type}>`;
   }
 
-  return `${toObjectKey(field)}: ${type}`;
+  const re_field_name = toObjectKey(field);
+  if (re_field_name != field.name) {
+    return `@as("${field.name}") ${re_field_name}: ${type}`;
+  } else {
+    return `${re_field_name}: ${type}`;
+  }
+
 };
 
 export const toNamedArgumentType = (field: DMMF.Field) => {
