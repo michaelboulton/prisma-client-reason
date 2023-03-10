@@ -48,7 +48,7 @@ export const toObjectType = (field: DMMF.Field) => {
   let type = toPrimitiveType(field.type, field.relationName);
 
   if (field.isList) {
-    type = `list<${type}>`;
+    type = `array<${type}>`;
   }
 
   if (!field.isRequired || field.relationName !== undefined) {
@@ -68,7 +68,7 @@ export const toNamedArgumentType = (field: DMMF.Field) => {
   let type = toPrimitiveType(field.type, field.relationName);
 
   if (field.isList) {
-    type = `list<${type}>`;
+    type = `array<${type}>`;
   }
 
   if (!field.isRequired || field.relationName !== undefined) {
@@ -86,7 +86,7 @@ export const toNamedArgument = (field: DMMF.Field) => {
   let type = toPrimitiveType(field.type, field.relationName);
 
   if (field.isList) {
-    type = `list<${type}>`;
+    type = `array<${type}>`;
   }
 
   return `~${toObjectKey(field)}: ${type}`;

@@ -37,7 +37,7 @@ var needsAnnotation = function (field) {
 exports.toObjectType = function (field) {
     var type = exports.toPrimitiveType(field.type, field.relationName);
     if (field.isList) {
-        type = "list<" + type + ">";
+        type = "array<" + type + ">";
     }
     if (!field.isRequired || field.relationName !== undefined) {
         type = "option<" + type + ">";
@@ -51,7 +51,7 @@ exports.toObjectType = function (field) {
 exports.toNamedArgumentType = function (field) {
     var type = exports.toPrimitiveType(field.type, field.relationName);
     if (field.isList) {
-        type = "list<" + type + ">";
+        type = "array<" + type + ">";
     }
     if (!field.isRequired || field.relationName !== undefined) {
         type = type + "=?";
@@ -64,7 +64,7 @@ exports.toNamedArgument = function (field) {
     }
     var type = exports.toPrimitiveType(field.type, field.relationName);
     if (field.isList) {
-        type = "list<" + type + ">";
+        type = "array<" + type + ">";
     }
     return "~" + exports.toObjectKey(field) + ": " + type;
 };
