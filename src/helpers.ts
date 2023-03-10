@@ -1,7 +1,7 @@
 import { DMMF } from '@prisma/generator-helper';
 import { upperFirst, camelCase } from 'lodash';
 
-export const toPrimitiveType = (type: string, relation?: string) => {
+export const toPrimitiveType = ({ type, relationName }: DMMF.Field) => {
   switch (type) {
     case 'Int':
       return 'int';
@@ -14,14 +14,29 @@ export const toPrimitiveType = (type: string, relation?: string) => {
     case 'DateTime':
       return 'string';
     default:
-      if (type == 'FindMany' && typeof relation !== 'undefined') {
-        const stripped = relation.match(/([A-Z][a-z]+)/);
-        if (!stripped) {
-          // FIXME
-          throw new Error('empty relation');
+      if (relationName !== undefined) {
+        if (type == 'FindMany') {
+          const stripped = relationName.match(/([A-Z][a-z]+)/);
+          if (!stripped) {
+            throw new Error('empty relation');
+          }
+
+          return `Externals.${stripped[0]}.${type}.t`;
+        } else {
+          let regExp = new RegExp(`([A-Za-z]+?)To([A-Za-z]+)`);
+          const split = relationName.match(regExp);
+          if (!split) {
+            throw new Error('Bad related');
+          }
+
+          if (split[1] == type) {
+            return `${split[1]}.WhereUniqueInput.t`;
+          } else {
+            return `${type}.WhereUniqueInput.t`;
+          }
         }
-        return `Externals.${stripped[0]}.${type}.t`;
       }
+
       return `${type}.t`;
   }
 };
@@ -45,7 +60,7 @@ const needsAnnotation = (field: DMMF.Field) => {
 };
 
 export const toObjectType = (field: DMMF.Field) => {
-  let type = toPrimitiveType(field.type, field.relationName);
+  let type = toPrimitiveType(field);
 
   if (field.isList) {
     type = `array<${type}>`;
@@ -65,7 +80,7 @@ export const toObjectType = (field: DMMF.Field) => {
 };
 
 export const toNamedArgumentType = (field: DMMF.Field) => {
-  let type = toPrimitiveType(field.type, field.relationName);
+  let type = toPrimitiveType(field);
 
   if (field.isList) {
     type = `array<${type}>`;
@@ -83,7 +98,7 @@ export const toNamedArgument = (field: DMMF.Field) => {
     return `~${toObjectKey(field)}=?`;
   }
 
-  let type = toPrimitiveType(field.type, field.relationName);
+  let type = toPrimitiveType(field);
 
   if (field.isList) {
     type = `array<${type}>`;

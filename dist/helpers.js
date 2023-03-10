@@ -1,7 +1,8 @@
 "use strict";
 exports.__esModule = true;
 var lodash_1 = require("lodash");
-exports.toPrimitiveType = function (type, relation) {
+exports.toPrimitiveType = function (_a) {
+    var type = _a.type, relationName = _a.relationName;
     switch (type) {
         case 'Int':
             return 'int';
@@ -14,12 +15,34 @@ exports.toPrimitiveType = function (type, relation) {
         case 'DateTime':
             return 'string';
         default:
-            if (type == 'FindMany' && typeof relation !== 'undefined') {
-                var stripped = relation.match(/([A-Z][a-z]+)/);
-                if (!stripped) {
-                    throw new Error('empty relation');
+            if (relationName !== undefined) {
+                if (type == 'FindMany') {
+                    var stripped = relationName.match(/([A-Z][a-z]+)/);
+                    if (!stripped) {
+                        throw new Error('empty relation');
+                    }
+                    return "Externals." + stripped[0] + "." + type + ".t";
                 }
-                return "Externals." + stripped[0] + "." + type + ".t";
+                else {
+                    console.log("type: " + type + ", relation name: " + relationName);
+                    var regExp = new RegExp("([A-Za-z]+?)To([A-Za-z]+)");
+                    if (type == 'Customer')
+                        console.log(regExp);
+                    var split = relationName.match(regExp);
+                    if (!split) {
+                        throw new Error('Bad related');
+                    }
+                    if (type == 'Customer')
+                        console.log(type);
+                    if (type == 'Customer')
+                        console.log(split);
+                    if (split[1] == type) {
+                        return split[1] + ".WhereUniqueInput.t";
+                    }
+                    else {
+                        return type + ".WhereUniqueInput.t";
+                    }
+                }
             }
             return type + ".t";
     }
@@ -35,7 +58,7 @@ var needsAnnotation = function (field) {
     return (re_field_name != field.name);
 };
 exports.toObjectType = function (field) {
-    var type = exports.toPrimitiveType(field.type, field.relationName);
+    var type = exports.toPrimitiveType(field);
     if (field.isList) {
         type = "array<" + type + ">";
     }
@@ -49,7 +72,7 @@ exports.toObjectType = function (field) {
     return key + ": " + type;
 };
 exports.toNamedArgumentType = function (field) {
-    var type = exports.toPrimitiveType(field.type, field.relationName);
+    var type = exports.toPrimitiveType(field);
     if (field.isList) {
         type = "array<" + type + ">";
     }
@@ -62,7 +85,7 @@ exports.toNamedArgument = function (field) {
     if (!field.isRequired || field.relationName !== undefined) {
         return "~" + exports.toObjectKey(field) + "=?";
     }
-    var type = exports.toPrimitiveType(field.type, field.relationName);
+    var type = exports.toPrimitiveType(field);
     if (field.isList) {
         type = "array<" + type + ">";
     }
