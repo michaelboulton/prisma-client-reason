@@ -34,8 +34,8 @@ class ExternalsGenerator {
     return codeBlock`
       module FindOne: {
         type t = {
-          select: option<${model.name}.Select.t>,
-          ${hasRelations ? `include_: option<${model.name}.Include.t>,` : ''}
+          select?: option<${model.name}.Select.t>,
+          ${hasRelations ? `include_?: option<${model.name}.Include.t>,` : ''}
           where: ${model.name}.WhereUniqueInput.t
         };
 
@@ -74,8 +74,8 @@ class ExternalsGenerator {
     return codeBlock`
       module Create: {
         type t = {
-          select: option<${model.name}.Select.t>,
-          ${hasRelations ? `include_: option<${model.name}.Include.t>,` : ''}
+          select?: option<${model.name}.Select.t>,
+          ${hasRelations ? `include_?: option<${model.name}.Include.t>,` : ''}
           data: ${model.name}.CreateInput.t
         };
 
