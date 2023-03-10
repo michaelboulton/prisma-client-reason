@@ -24,18 +24,11 @@ exports.toPrimitiveType = function (_a) {
                     return "Externals." + stripped[0] + "." + type + ".t";
                 }
                 else {
-                    console.log("type: " + type + ", relation name: " + relationName);
                     var regExp = new RegExp("([A-Za-z]+?)To([A-Za-z]+)");
-                    if (type == 'Customer')
-                        console.log(regExp);
                     var split = relationName.match(regExp);
                     if (!split) {
                         throw new Error('Bad related');
                     }
-                    if (type == 'Customer')
-                        console.log(type);
-                    if (type == 'Customer')
-                        console.log(split);
                     if (split[1] == type) {
                         return split[1] + ".WhereUniqueInput.t";
                     }
@@ -58,12 +51,18 @@ var needsAnnotation = function (field) {
     return (re_field_name != field.name);
 };
 exports.toObjectType = function (field) {
-    var type = exports.toPrimitiveType(field);
-    if (field.isList) {
-        type = "array<" + type + ">";
+    var type;
+    if (field.relationName !== undefined && field.type == 'Boolean') {
+        type = 'option<bool>';
     }
-    if (!field.isRequired || field.relationName !== undefined) {
-        type = "option<" + type + ">";
+    else {
+        type = exports.toPrimitiveType(field);
+        if (field.isList) {
+            type = "array<" + type + ">";
+        }
+        if (!field.isRequired || field.relationName !== undefined) {
+            type = "option<" + type + ">";
+        }
     }
     var key = exports.toObjectKey(field);
     if (needsAnnotation(field)) {
@@ -72,9 +71,15 @@ exports.toObjectType = function (field) {
     return key + ": " + type;
 };
 exports.toNamedArgumentType = function (field) {
-    var type = exports.toPrimitiveType(field);
-    if (field.isList) {
-        type = "array<" + type + ">";
+    var type;
+    if (field.relationName !== undefined && field.type == 'Boolean') {
+        type = 'bool';
+    }
+    else {
+        type = exports.toPrimitiveType(field);
+        if (field.isList) {
+            type = "array<" + type + ">";
+        }
     }
     if (!field.isRequired || field.relationName !== undefined) {
         type = type + "=?";

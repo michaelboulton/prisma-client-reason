@@ -60,14 +60,20 @@ const needsAnnotation = (field: DMMF.Field) => {
 };
 
 export const toObjectType = (field: DMMF.Field) => {
-  let type = toPrimitiveType(field);
+  let type: string;
 
-  if (field.isList) {
-    type = `array<${type}>`;
-  }
+  if (field.relationName !== undefined && field.type == 'Boolean') {
+    type = 'option<bool>';
+  } else {
+    type = toPrimitiveType(field);
 
-  if (!field.isRequired || field.relationName !== undefined) {
-    type = `option<${type}>`;
+    if (field.isList) {
+      type = `array<${type}>`;
+    }
+
+    if (!field.isRequired || field.relationName !== undefined) {
+      type = `option<${type}>`;
+    }
   }
 
   let key = toObjectKey(field);
@@ -80,10 +86,16 @@ export const toObjectType = (field: DMMF.Field) => {
 };
 
 export const toNamedArgumentType = (field: DMMF.Field) => {
-  let type = toPrimitiveType(field);
+  let type: string;
 
-  if (field.isList) {
-    type = `array<${type}>`;
+  if (field.relationName !== undefined && field.type == 'Boolean') {
+    type = 'bool';
+  } else {
+    type = toPrimitiveType(field);
+
+    if (field.isList) {
+      type = `array<${type}>`;
+    }
   }
 
   if (!field.isRequired || field.relationName !== undefined) {
