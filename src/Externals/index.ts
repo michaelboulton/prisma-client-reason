@@ -41,7 +41,7 @@ class ExternalsGenerator {
 
         @send @scope("${model.name.toLowerCase()}")
         external make: (prismaClient, t) =>
-          promise<${model.name}.t> = "findOne";
+          promise<Js.Nullable.t<${model.name}.t>> = "findFirst";
       };
     `;
   };
