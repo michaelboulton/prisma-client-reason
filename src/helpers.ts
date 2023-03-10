@@ -1,7 +1,18 @@
 import { DMMF } from '@prisma/generator-helper';
 import { upperFirst, camelCase } from 'lodash';
 
-export const toPrimitiveType = ({ type, relationName }: DMMF.Field) => {
+
+function relatedTo(relationName: string) {
+  let regExp = new RegExp(`([A-Za-z]+?)To([A-Za-z]+)`);
+  const split = relationName.match(regExp);
+  if (!split) {
+    throw new Error('Bad related');
+  }
+
+  return split;
+}
+
+export const toPrimitiveType = ({ type, relationName, isList }: DMMF.Field) => {
   switch (type) {
     case 'Int':
       return 'int';
@@ -23,14 +34,10 @@ export const toPrimitiveType = ({ type, relationName }: DMMF.Field) => {
 
           return `Externals.${stripped[0]}.${type}.t`;
         } else {
-          let regExp = new RegExp(`([A-Za-z]+?)To([A-Za-z]+)`);
-          const split = relationName.match(regExp);
-          if (!split) {
-            throw new Error('Bad related');
-          }
+          const r = relatedTo(relationName)[1];
 
-          if (split[1] == type) {
-            return `${split[1]}.WhereUniqueInput.t`;
+          if (r == type) {
+            return `${r}.WhereUniqueInput.t`;
           } else {
             return `${type}.WhereUniqueInput.t`;
           }
@@ -46,6 +53,11 @@ export const toObjectKey = (field: DMMF.Field) => {
 };
 
 export const toObjectKeyValue = (field: DMMF.Field) => {
+  if (field.isList && field.relationName !== undefined) {
+
+    return `${toObjectKey(field)}: {connect: ${toObjectKey(field)}}`;
+  }
+
   return `${toObjectKey(field)}: ${toObjectKey(field)}`;
 };
 
@@ -62,17 +74,63 @@ const needsAnnotation = (field: DMMF.Field) => {
 export const toObjectType = (field: DMMF.Field) => {
   let type: string;
 
-  if (field.relationName !== undefined && field.type == 'Boolean') {
-    type = 'option<bool>';
+  if (!field.isRequired) {
+    if (field.relationName === undefined) {
+      type = 'option<bool>';
+    } else {
+      console.log(({
+        name: field.name,
+        relationName: field.relationName,
+        type: field.type,
+        isList: field.isList,
+      }));
+
+      let useConnect: string;
+      if (field.isList) {
+        useConnect = relatedTo(field.relationName)[1];
+      } else {
+        useConnect = relatedTo(field.relationName)[2];
+      }
+
+      type = `${useConnect}.WhereUniqueInput.connectOne`;
+    }
   } else {
     type = toPrimitiveType(field);
 
-    if (field.isList) {
-      type = `array<${type}>`;
-    }
+    if (field.relationName !== undefined) {
+      /* Field is just a relation to one or more, in this case fall back to this type of struct
 
-    if (!field.isRequired || field.relationName !== undefined) {
-      type = `option<${type}>`;
+      export type OrderCreateNestedManyWithoutCustomerInput = {
+        create?: XOR<Enumerable<OrderCreateWithoutCustomerInput>, Enumerable<OrderUncheckedCreateWithoutCustomerInput>>
+        connectOrCreate?: Enumerable<OrderCreateOrConnectWithoutCustomerInput>
+        createMany?: OrderCreateManyCustomerInputEnvelope
+    ->  connect?: Enumerable<OrderWhereUniqueInput>
+      }
+
+       */
+      // console.log(type);
+      // console.log(field.relationName);
+
+      const r = relatedTo(field.relationName)[1];
+
+      type = `${r}.WhereUniqueInput.t`;
+
+      //type = type.replace(/Externals\./, '');
+      //type = type.replace(/FindMany\./, '');
+
+      if (field.isList) {
+        type = type.replace(/\.t$/, '.connectMany');
+      } else {
+        type = type.replace(/\.t$/, '.connectOne');
+      }
+    } else {
+      if (field.isList) {
+        type = `array<${type}>`;
+      }
+
+      // if (!field.isRequired || field.relationName !== undefined) {
+      //   type = `option<${type}>`;
+      // }
     }
   }
 
@@ -89,6 +147,7 @@ export const toNamedArgumentType = (field: DMMF.Field) => {
   let type: string;
 
   if (field.relationName !== undefined && field.type == 'Boolean') {
+    // FIXME: look at above code and get this as the same type
     type = 'bool';
   } else {
     type = toPrimitiveType(field);

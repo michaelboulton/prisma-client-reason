@@ -1,8 +1,16 @@
 "use strict";
 exports.__esModule = true;
 var lodash_1 = require("lodash");
+function relatedTo(relationName) {
+    var regExp = new RegExp("([A-Za-z]+?)To([A-Za-z]+)");
+    var split = relationName.match(regExp);
+    if (!split) {
+        throw new Error('Bad related');
+    }
+    return split;
+}
 exports.toPrimitiveType = function (_a) {
-    var type = _a.type, relationName = _a.relationName;
+    var type = _a.type, relationName = _a.relationName, isList = _a.isList;
     switch (type) {
         case 'Int':
             return 'int';
@@ -24,13 +32,9 @@ exports.toPrimitiveType = function (_a) {
                     return "Externals." + stripped[0] + "." + type + ".t";
                 }
                 else {
-                    var regExp = new RegExp("([A-Za-z]+?)To([A-Za-z]+)");
-                    var split = relationName.match(regExp);
-                    if (!split) {
-                        throw new Error('Bad related');
-                    }
-                    if (split[1] == type) {
-                        return split[1] + ".WhereUniqueInput.t";
+                    var r = relatedTo(relationName)[1];
+                    if (r == type) {
+                        return r + ".WhereUniqueInput.t";
                     }
                     else {
                         return type + ".WhereUniqueInput.t";
@@ -44,6 +48,9 @@ exports.toObjectKey = function (field) {
     return "" + lodash_1.camelCase(field.name);
 };
 exports.toObjectKeyValue = function (field) {
+    if (field.isList && field.relationName !== undefined) {
+        return exports.toObjectKey(field) + ": {connect: " + exports.toObjectKey(field) + "}";
+    }
     return exports.toObjectKey(field) + ": " + exports.toObjectKey(field);
 };
 var needsAnnotation = function (field) {
@@ -52,16 +59,43 @@ var needsAnnotation = function (field) {
 };
 exports.toObjectType = function (field) {
     var type;
-    if (field.relationName !== undefined && field.type == 'Boolean') {
-        type = 'option<bool>';
+    if (!field.isRequired) {
+        if (field.relationName === undefined) {
+            type = 'option<bool>';
+        }
+        else {
+            console.log(({
+                name: field.name,
+                relationName: field.relationName,
+                type: field.type,
+                isList: field.isList
+            }));
+            var useConnect = void 0;
+            if (field.isList) {
+                useConnect = relatedTo(field.relationName)[1];
+            }
+            else {
+                useConnect = relatedTo(field.relationName)[2];
+            }
+            type = useConnect + ".WhereUniqueInput.connectOne";
+        }
     }
     else {
         type = exports.toPrimitiveType(field);
-        if (field.isList) {
-            type = "array<" + type + ">";
+        if (field.relationName !== undefined) {
+            var r = relatedTo(field.relationName)[1];
+            type = r + ".WhereUniqueInput.t";
+            if (field.isList) {
+                type = type.replace(/\.t$/, '.connectMany');
+            }
+            else {
+                type = type.replace(/\.t$/, '.connectOne');
+            }
         }
-        if (!field.isRequired || field.relationName !== undefined) {
-            type = "option<" + type + ">";
+        else {
+            if (field.isList) {
+                type = "array<" + type + ">";
+            }
         }
     }
     var key = exports.toObjectKey(field);
