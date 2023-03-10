@@ -42,7 +42,7 @@ var ExternalsGenerator = (function () {
             return common_tags_1.codeBlock(templateObject_10 || (templateObject_10 = __makeTemplateObject(["\n      \n    "], ["\n      \n    "])));
         };
         this.deleteMany = function (model) {
-            return common_tags_1.codeBlock(templateObject_11 || (templateObject_11 = __makeTemplateObject(["\n      \n    "], ["\n      \n    "])));
+            return common_tags_1.codeBlock(templateObject_11 || (templateObject_11 = __makeTemplateObject(["\n      module DeleteMany: {\n        type t = {\n          where?: option<", ".WhereInput.t>,\n        };\n\n        @send @scope(\"", "\")\n        external make: (prismaClient, t) =>\n          promise<batchPayload> = \"deleteMany\";\n      };\n    "], ["\n      module DeleteMany: {\n        type t = {\n          where?: option<", ".WhereInput.t>,\n        };\n\n        @send @scope(\"", "\")\n        external make: (prismaClient, t) =>\n          promise<batchPayload> = \"deleteMany\";\n      };\n    "])), model.name, model.name.toLowerCase());
         };
         this.count = function (model) {
             return common_tags_1.codeBlock(templateObject_12 || (templateObject_12 = __makeTemplateObject(["\n      \n    "], ["\n      \n    "])));

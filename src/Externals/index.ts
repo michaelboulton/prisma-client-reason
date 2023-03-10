@@ -111,8 +111,17 @@ class ExternalsGenerator {
   };
 
   private deleteMany = (model: DMMF.Model) => {
+    // language=Rescript
     return codeBlock`
-      
+      module DeleteMany: {
+        type t = {
+          where?: option<${model.name}.WhereInput.t>,
+        };
+
+        @send @scope("${model.name.toLowerCase()}")
+        external make: (prismaClient, t) =>
+          promise<batchPayload> = "deleteMany";
+      };
     `;
   };
 

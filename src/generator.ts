@@ -39,6 +39,11 @@ generatorHandler({
       ),
       `
         type prismaClient;
+        
+        type batchPayload = {
+          // https://rescript-lang.org/docs/manual/latest/shared-data-types
+          count: float,
+        }
 
         /* ENUMS */
         ${options.dmmf.schema.enumTypes.prisma

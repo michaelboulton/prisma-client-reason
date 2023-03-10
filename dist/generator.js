@@ -69,7 +69,7 @@ generator_helper_1.generatorHandler({
                     return [4, fs_extra_1.ensureDir(options.generator.output.value)];
                 case 1:
                     _a.sent();
-                    return [4, fs_extra_1.writeFile(path_1.join(options.generator.output.value, options.generator.config.name + ".res"), "\n        type prismaClient;\n\n        /* ENUMS */\n        " + options.dmmf.schema.enumTypes.prisma
+                    return [4, fs_extra_1.writeFile(path_1.join(options.generator.output.value, options.generator.config.name + ".res"), "\n        type prismaClient;\n        \n        type batchPayload = {\n          // https://rescript-lang.org/docs/manual/latest/shared-data-types\n          count: float,\n        }\n\n        /* ENUMS */\n        " + options.dmmf.schema.enumTypes.prisma
                             .map(function (type) { return new Enum_1["default"](type).generate(); })
                             .join('\n\n') + "\n        \n        module rec " + options.dmmf.datamodel.models
                             .map(function (model) { return new Model_1["default"](model).generate(); })
