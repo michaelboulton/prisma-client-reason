@@ -14,10 +14,10 @@ exports.toPrimitiveType = function (type, relation) {
         case 'DateTime':
             return 'string';
         default:
-            if (type == "FindMany" && typeof relation !== "undefined") {
+            if (type == 'FindMany' && typeof relation !== 'undefined') {
                 var stripped = relation.match(/([A-Z][a-z]+)/);
                 if (!stripped) {
-                    throw new Error("empty relation");
+                    throw new Error('empty relation');
                 }
                 return "Externals." + stripped[0] + "." + type + ".t";
             }
@@ -30,28 +30,36 @@ exports.toObjectKey = function (field) {
 exports.toObjectKeyValue = function (field) {
     return exports.toObjectKey(field) + ": " + exports.toObjectKey(field);
 };
+var needsAnnotation = function (field) {
+    var re_field_name = exports.toObjectKey(field);
+    return (re_field_name != field.name);
+};
 exports.toObjectType = function (field) {
     var type = exports.toPrimitiveType(field.type, field.relationName);
     if (field.isList) {
         type = "list<" + type + ">";
     }
-    if (!field.isRequired) {
+    if (!field.isRequired || field.relationName !== undefined) {
         type = "option<" + type + ">";
     }
-    return exports.toObjectKey(field) + ": " + type;
+    var key = exports.toObjectKey(field);
+    if (needsAnnotation(field)) {
+        key = "@as(\"" + field.name + "\") " + key;
+    }
+    return key + ": " + type;
 };
 exports.toNamedArgumentType = function (field) {
     var type = exports.toPrimitiveType(field.type, field.relationName);
     if (field.isList) {
         type = "list<" + type + ">";
     }
-    if (!field.isRequired) {
+    if (!field.isRequired || field.relationName !== undefined) {
         type = type + "=?";
     }
     return "~" + exports.toObjectKey(field) + ": " + type;
 };
 exports.toNamedArgument = function (field) {
-    if (!field.isRequired) {
+    if (!field.isRequired || field.relationName !== undefined) {
         return "~" + exports.toObjectKey(field) + "=?";
     }
     var type = exports.toPrimitiveType(field.type, field.relationName);
