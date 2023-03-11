@@ -29,7 +29,9 @@ function relatedTo(field) {
                 if (len !== 1 && len !== 0) {
                   return {
                           TAG: /* Ok */0,
-                          _0: match
+                          _0: match.map(function (elem) {
+                                return Belt_Option.getExn((elem == null) ? undefined : Caml_option.some(elem));
+                              })
                         };
                 } else {
                   return {
@@ -52,7 +54,7 @@ function toPrimitiveType(field) {
       var findName = Belt_Option.getExn(Caml_option.nullable_to_opt(Caml_array.get(matches, 0)));
       return "Externals." + findName + "." + field.type + ".t";
     }
-    var r = Belt_Option.getExn(Caml_option.nullable_to_opt(Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1)));
+    var r = Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1);
     if (r === field.type) {
       return "" + r + ".WhereUniqueInput.t";
     } else {

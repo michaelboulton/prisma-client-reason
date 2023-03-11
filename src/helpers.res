@@ -19,6 +19,7 @@ module Prisma = {
   }
 }
 
+/** Re-exports of lodash functions */
 module Lodash: {
   let camelCase: string => string
 } = {
@@ -45,7 +46,10 @@ let relatedTo = (field: Prisma.field) => {
 
     switch captures {
     | [] | [_] => Belt.Result.Error("less matches than expected")
-    | allMatches => Belt.Result.Ok(allMatches)
+    | allMatches =>
+      allMatches
+      ->Js.Array2.map(elem => elem->Js.Nullable.toOption->Belt.Option.getExn)
+      ->Belt.Result.Ok
     }
   })
 }
@@ -78,7 +82,7 @@ let toPrimitiveType = (field: Prisma.field) => {
     }
   | (_, _) => {
       // Other relation - find which way the relation is and use the 'where' type generated for that purpose
-      let r = (relatedTo(field)->Belt.Result.getExn)[1]->Js.Nullable.toOption->Belt.Option.getExn
+      let r = (relatedTo(field)->Belt.Result.getExn)[1]
 
       if r == field.type_ {
         `${r}.WhereUniqueInput.t`
