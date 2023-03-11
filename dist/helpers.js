@@ -48,8 +48,7 @@ exports.toObjectKey = function (field) {
     return "" + lodash_1.camelCase(field.name);
 };
 exports.toObjectKeyValue = function (field) {
-    if (field.isList && field.relationName !== undefined) {
-        return exports.toObjectKey(field) + ": {connect: " + exports.toObjectKey(field) + "}";
+    if (field.isList && field.relationName !== undefined && field.isRequired) {
     }
     return exports.toObjectKey(field) + ": " + exports.toObjectKey(field);
 };
@@ -58,44 +57,32 @@ var needsAnnotation = function (field) {
     return (re_field_name != field.name);
 };
 exports.toObjectType = function (field) {
-    var type;
-    if (!field.isRequired) {
-        if (field.relationName === undefined) {
-            type = 'option<bool>';
+    var type = exports.toPrimitiveType(field);
+    if (field.relationName === undefined) {
+        if (field.isList) {
+            type = "array<" + type + ">";
         }
-        else {
+        if (!field.isRequired) {
+            type = "option<" + type + ">";
+        }
+    }
+    else {
+        if (!field.isRequired || field.type == 'FindMany') {
+            type = "option<bool>";
+        }
+        else if (field.isList) {
             console.log(({
                 name: field.name,
                 relationName: field.relationName,
                 type: field.type,
-                isList: field.isList
+                isList: field.isList,
+                required: field.isRequired,
+                relationToFields: field.relationToFields
             }));
-            var useConnect = void 0;
-            if (field.isList) {
-                useConnect = relatedTo(field.relationName)[1];
-            }
-            else {
-                useConnect = relatedTo(field.relationName)[2];
-            }
-            type = useConnect + ".WhereUniqueInput.connectOne";
-        }
-    }
-    else {
-        type = exports.toPrimitiveType(field);
-        if (field.relationName !== undefined) {
-            var r = relatedTo(field.relationName)[1];
-            type = r + ".WhereUniqueInput.t";
-            if (field.isList) {
-                type = type.replace(/\.t$/, '.connectMany');
-            }
-            else {
-                type = type.replace(/\.t$/, '.connectOne');
-            }
+            type = "option<" + relatedTo(field.relationName)[1] + ".WhereUniqueInput.connectMany>";
         }
         else {
-            if (field.isList) {
-                type = "array<" + type + ">";
-            }
+            type = relatedTo(field.relationName)[2] + ".WhereUniqueInput.connectOne";
         }
     }
     var key = exports.toObjectKey(field);
@@ -105,28 +92,37 @@ exports.toObjectType = function (field) {
     return key + ": " + type;
 };
 exports.toNamedArgumentType = function (field) {
-    var type;
-    if (field.relationName !== undefined && field.type == 'Boolean') {
-        type = 'bool';
-    }
-    else {
-        type = exports.toPrimitiveType(field);
+    var type = exports.toPrimitiveType(field);
+    if (field.relationName === undefined) {
         if (field.isList) {
             type = "array<" + type + ">";
         }
+        if (!field.isRequired) {
+            type = type + "=?";
+        }
     }
-    if (!field.isRequired || field.relationName !== undefined) {
-        type = type + "=?";
+    else {
+        if (field.type == 'Boolean') {
+            type = 'bool';
+        }
+        if (!field.isRequired) {
+            type = type + "=?";
+        }
     }
     return "~" + exports.toObjectKey(field) + ": " + type;
 };
 exports.toNamedArgument = function (field) {
-    if (!field.isRequired || field.relationName !== undefined) {
+    if (!field.isRequired) {
         return "~" + exports.toObjectKey(field) + "=?";
     }
     var type = exports.toPrimitiveType(field);
     if (field.isList) {
-        type = "array<" + type + ">";
+        if (field.relationName === undefined) {
+            type = "array<" + type + ">";
+        }
+        else {
+            return "~" + exports.toObjectKey(field) + "=?";
+        }
     }
     return "~" + exports.toObjectKey(field) + ": " + type;
 };

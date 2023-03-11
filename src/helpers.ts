@@ -53,16 +53,16 @@ export const toObjectKey = (field: DMMF.Field) => {
 };
 
 export const toObjectKeyValue = (field: DMMF.Field) => {
-  if (field.isList && field.relationName !== undefined) {
-
-    return `${toObjectKey(field)}: {connect: ${toObjectKey(field)}}`;
+  if (field.isList && field.relationName !== undefined && field.isRequired) {
+    // return `${toObjectKey(field)}: {connect: ${toObjectKey(field)}}`;
   }
 
   return `${toObjectKey(field)}: ${toObjectKey(field)}`;
 };
 
 /**
- * Returns if the rescript field name is different from the real name and will need an annotation
+ * Returns if the rescript field name is different from the real name and will
+ * need an annotation
  *
  * @param field Field to introspect
  */
@@ -72,66 +72,66 @@ const needsAnnotation = (field: DMMF.Field) => {
 };
 
 export const toObjectType = (field: DMMF.Field) => {
-  let type: string;
+  let type = toPrimitiveType(field);
 
-  if (!field.isRequired) {
-    if (field.relationName === undefined) {
-      type = 'option<bool>';
-    } else {
+  if (field.relationName === undefined) {
+    // No relation - do normal checks
+    if (field.isList) {
+      type = `array<${type}>`;
+    }
+
+    if (!field.isRequired) {
+      type = `option<${type}>`;
+    }
+  } else {
+    if (!field.isRequired || field.type == 'FindMany') {
+      // A not required relation implies a 'select'
+      type = `option<bool>`;
+    } else if (field.isList) {
       console.log(({
         name: field.name,
         relationName: field.relationName,
         type: field.type,
         isList: field.isList,
+        required: field.isRequired,
+        relationToFields: field.relationToFields,
       }));
-
-      let useConnect: string;
-      if (field.isList) {
-        useConnect = relatedTo(field.relationName)[1];
-      } else {
-        useConnect = relatedTo(field.relationName)[2];
-      }
-
-      type = `${useConnect}.WhereUniqueInput.connectOne`;
-    }
-  } else {
-    type = toPrimitiveType(field);
-
-    if (field.relationName !== undefined) {
-      /* Field is just a relation to one or more, in this case fall back to this type of struct
-
-      export type OrderCreateNestedManyWithoutCustomerInput = {
-        create?: XOR<Enumerable<OrderCreateWithoutCustomerInput>, Enumerable<OrderUncheckedCreateWithoutCustomerInput>>
-        connectOrCreate?: Enumerable<OrderCreateOrConnectWithoutCustomerInput>
-        createMany?: OrderCreateManyCustomerInputEnvelope
-    ->  connect?: Enumerable<OrderWhereUniqueInput>
-      }
-
-       */
-      // console.log(type);
-      // console.log(field.relationName);
-
-      const r = relatedTo(field.relationName)[1];
-
-      type = `${r}.WhereUniqueInput.t`;
-
-      //type = type.replace(/Externals\./, '');
-      //type = type.replace(/FindMany\./, '');
-
-      if (field.isList) {
-        type = type.replace(/\.t$/, '.connectMany');
-      } else {
-        type = type.replace(/\.t$/, '.connectOne');
-      }
+      // list -> one to many
+      type = `option<${relatedTo(field.relationName)[1]}.WhereUniqueInput.connectMany>`;
     } else {
-      if (field.isList) {
-        type = `array<${type}>`;
-      }
-
-      // if (!field.isRequired || field.relationName !== undefined) {
-      //   type = `option<${type}>`;
-      // }
+      // not a list -> one to one
+      type = `${relatedTo(field.relationName)[2]}.WhereUniqueInput.connectOne`;
     }
+
+    /* Field is just a relation to one or more, in this case fall back to this type of struct
+
+    export type OrderCreateNestedManyWithoutCustomerInput = {
+      create?: XOR<Enumerable<OrderCreateWithoutCustomerInput>, Enumerable<OrderUncheckedCreateWithoutCustomerInput>>
+      connectOrCreate?: Enumerable<OrderCreateOrConnectWithoutCustomerInput>
+      createMany?: OrderCreateManyCustomerInputEnvelope
+  ->  connect?: Enumerable<OrderWhereUniqueInput>
+    }
+
+     */
+
+    /*
+    const r = relatedTo(field.relationName)[1];
+
+    type = `${r}.WhereUniqueInput.t`;
+
+    //type = type.replace(/Externals\./, '');
+    //type = type.replace(/FindMany\./, '');
+
+    if (field.isList) {
+      type = type.replace(/\.t$/, '.connectMany');
+    } else {
+      type = type.replace(/\.t$/, '.connectOne');
+    }
+
+    // if (!field.isRequired || field.relationName !== undefined) {
+    //   type = `option<${type}>`;
+    // }
+     */
   }
 
   let key = toObjectKey(field);
@@ -144,35 +144,42 @@ export const toObjectType = (field: DMMF.Field) => {
 };
 
 export const toNamedArgumentType = (field: DMMF.Field) => {
-  let type: string;
+  let type = toPrimitiveType(field);
 
-  if (field.relationName !== undefined && field.type == 'Boolean') {
-    // FIXME: look at above code and get this as the same type
-    type = 'bool';
-  } else {
-    type = toPrimitiveType(field);
-
+  if (field.relationName === undefined) {
     if (field.isList) {
       type = `array<${type}>`;
     }
-  }
 
-  if (!field.isRequired || field.relationName !== undefined) {
-    type = `${type}=?`;
+    if (!field.isRequired) {
+      type = `${type}=?`;
+    }
+  } else {
+    if (field.type == 'Boolean') {
+      type = 'bool';
+    }
+    if (!field.isRequired) {
+      type = `${type}=?`;
+    }
   }
 
   return `~${toObjectKey(field)}: ${type}`;
 };
 
+
 export const toNamedArgument = (field: DMMF.Field) => {
-  if (!field.isRequired || field.relationName !== undefined) {
+  if (!field.isRequired) {
     return `~${toObjectKey(field)}=?`;
   }
 
   let type = toPrimitiveType(field);
 
   if (field.isList) {
-    type = `array<${type}>`;
+    if (field.relationName === undefined) {
+      type = `array<${type}>`;
+    } else {
+      return `~${toObjectKey(field)}=?`;
+    }
   }
 
   return `~${toObjectKey(field)}: ${type}`;
