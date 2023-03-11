@@ -34,6 +34,9 @@ module Lodash: {
   let camelCase: string => string = s => default->camelCase_(s)
 }
 
+/**
+Gets the names of types in a relation
+*/
 let relatedTo = (field: Prisma.field) => {
   field.relationName
   ->Belt.Option.flatMap(relationName => {
