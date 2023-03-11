@@ -19,9 +19,18 @@ module Prisma = {
   }
 }
 
-module Lodash = {
+module Lodash: {
+  let camelCase: string => string
+} = {
+  type t
+
   @module("lodash")
-  external camelCase: string => string = "camelCase"
+  external default: t = "default"
+
+  @send
+  external camelCase_: (t, string) => string = "camelCase"
+
+  let camelCase: string => string = s => default->camelCase_(s)
 }
 
 let relatedTo = (field: Prisma.field) => {
@@ -94,3 +103,10 @@ let annotation = (field: Prisma.field) =>
   } else {
     None
   }
+
+/** converts from a field to a string */
+type fieldPrinters = {
+  objectType: Prisma.field => string,
+  namedArgumentType: Prisma.field => string,
+  namedArgument: Prisma.field => string,
+}

@@ -5,13 +5,20 @@
     "version": 4
   },
   "refmt": 3,
-  "bs-dependencies": [
+  "bs-dependencies": [],
+  "bs-dev-dependencies": [
+    "@glennsl/rescript-jest"
   ],
   "ppx-flags": [],
   "sources": [
     {
       "dir": "src",
       "subdirs": false
+    },
+    {
+      "dir": "__tests__",
+      "subdirs": true,
+      "type": "dev"
     }
   ],
   "package-specs": {
