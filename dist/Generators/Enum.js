@@ -11,9 +11,9 @@ var EnumGenerator = (function () {
         var _this = this;
         this.generate = function () {
             var makeValue = function (enumValue) {
-                return "| " + lodash_1.upperFirst(lodash_1.camelCase(enumValue));
+                return "| ".concat((0, lodash_1.upperFirst)((0, lodash_1.camelCase)(enumValue)));
             };
-            return common_tags_1.codeBlock(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n      module ", " = {\n        type t = \n        ", ";\n      };\n    "], ["\n      module ", " = {\n        type t = \n        ", ";\n      };\n    "])), _this["enum"].name, _this["enum"].values.map(makeValue).join('\n'));
+            return (0, common_tags_1.codeBlock)(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n      module ", " = {\n        type t = \n        ", ";\n      };\n    "], ["\n      module ", " = {\n        type t = \n        ", ";\n      };\n    "])), _this["enum"].name, _this["enum"].values.map(makeValue).join('\n'));
         };
         this["enum"] = enum_;
     }

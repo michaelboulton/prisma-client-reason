@@ -1,0 +1,35 @@
+{
+  "name": "prisma-client-reason",
+  "namespace": false,
+  "jsx": {
+    "version": 4
+  },
+  "refmt": 3,
+  "bs-dependencies": [
+  ],
+  "ppx-flags": [],
+  "sources": [
+    {
+      "dir": "src",
+      "subdirs": false
+    }
+  ],
+  "package-specs": {
+    "module": "es6",
+    "in-source": true
+  },
+  "suffix": ".mjs",
+  "warnings": {
+    "number": "-3",
+    "error": "+101+8"
+  },
+  "gentypeconfig": {
+    "language": "untyped",
+    "shims": [],
+    "module": "es6",
+    "debug": {
+      "all": false,
+      "basic": false
+    }
+  }
+}

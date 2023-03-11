@@ -1,5 +1,6 @@
 "use strict";
 exports.__esModule = true;
+exports.toNamedArgument = exports.toNamedArgumentType = exports.toObjectType = exports.toObjectKeyValue = exports.toObjectKey = exports.toPrimitiveType = void 0;
 var lodash_1 = require("lodash");
 function relatedTo(relationName) {
     var regExp = new RegExp("([A-Za-z]+?)To([A-Za-z]+)");
@@ -9,7 +10,7 @@ function relatedTo(relationName) {
     }
     return split;
 }
-exports.toPrimitiveType = function (_a) {
+var toPrimitiveType = function (_a) {
     var type = _a.type, relationName = _a.relationName, isList = _a.isList;
     switch (type) {
         case 'Int':
@@ -29,41 +30,44 @@ exports.toPrimitiveType = function (_a) {
                     if (!stripped) {
                         throw new Error('empty relation');
                     }
-                    return "Externals." + stripped[0] + "." + type + ".t";
+                    return "Externals.".concat(stripped[0], ".").concat(type, ".t");
                 }
                 else {
                     var r = relatedTo(relationName)[1];
                     if (r == type) {
-                        return r + ".WhereUniqueInput.t";
+                        return "".concat(r, ".WhereUniqueInput.t");
                     }
                     else {
-                        return type + ".WhereUniqueInput.t";
+                        return "".concat(type, ".WhereUniqueInput.t");
                     }
                 }
             }
-            return type + ".t";
+            return "".concat(type, ".t");
     }
 };
-exports.toObjectKey = function (field) {
-    return "" + lodash_1.camelCase(field.name);
+exports.toPrimitiveType = toPrimitiveType;
+var toObjectKey = function (field) {
+    return "".concat((0, lodash_1.camelCase)(field.name));
 };
-exports.toObjectKeyValue = function (field) {
+exports.toObjectKey = toObjectKey;
+var toObjectKeyValue = function (field) {
     if (field.isList && field.relationName !== undefined && field.isRequired) {
     }
-    return exports.toObjectKey(field) + ": " + exports.toObjectKey(field);
+    return "".concat((0, exports.toObjectKey)(field), ": ").concat((0, exports.toObjectKey)(field));
 };
+exports.toObjectKeyValue = toObjectKeyValue;
 var needsAnnotation = function (field) {
-    var re_field_name = exports.toObjectKey(field);
+    var re_field_name = (0, exports.toObjectKey)(field);
     return (re_field_name != field.name);
 };
-exports.toObjectType = function (field) {
-    var type = exports.toPrimitiveType(field);
+var toObjectType = function (field) {
+    var type = (0, exports.toPrimitiveType)(field);
     if (field.relationName === undefined) {
         if (field.isList) {
-            type = "array<" + type + ">";
+            type = "array<".concat(type, ">");
         }
         if (!field.isRequired) {
-            type = "option<" + type + ">";
+            type = "option<".concat(type, ">");
         }
     }
     else {
@@ -79,26 +83,27 @@ exports.toObjectType = function (field) {
                 required: field.isRequired,
                 relationToFields: field.relationToFields
             }));
-            type = "option<" + relatedTo(field.relationName)[1] + ".WhereUniqueInput.connectMany>";
+            type = "option<".concat(relatedTo(field.relationName)[1], ".WhereUniqueInput.connectMany>");
         }
         else {
-            type = relatedTo(field.relationName)[2] + ".WhereUniqueInput.connectOne";
+            type = "".concat(relatedTo(field.relationName)[2], ".WhereUniqueInput.connectOne");
         }
     }
-    var key = exports.toObjectKey(field);
+    var key = (0, exports.toObjectKey)(field);
     if (needsAnnotation(field)) {
-        key = "@as(\"" + field.name + "\") " + key;
+        key = "@as(\"".concat(field.name, "\") ").concat(key);
     }
-    return key + ": " + type;
+    return "".concat(key, ": ").concat(type);
 };
-exports.toNamedArgumentType = function (field) {
-    var type = exports.toPrimitiveType(field);
+exports.toObjectType = toObjectType;
+var toNamedArgumentType = function (field) {
+    var type = (0, exports.toPrimitiveType)(field);
     if (field.relationName === undefined) {
         if (field.isList) {
-            type = "array<" + type + ">";
+            type = "array<".concat(type, ">");
         }
         if (!field.isRequired) {
-            type = type + "=?";
+            type = "".concat(type, "=?");
         }
     }
     else {
@@ -106,24 +111,26 @@ exports.toNamedArgumentType = function (field) {
             type = 'bool';
         }
         if (!field.isRequired) {
-            type = type + "=?";
+            type = "".concat(type, "=?");
         }
     }
-    return "~" + exports.toObjectKey(field) + ": " + type;
+    return "~".concat((0, exports.toObjectKey)(field), ": ").concat(type);
 };
-exports.toNamedArgument = function (field) {
+exports.toNamedArgumentType = toNamedArgumentType;
+var toNamedArgument = function (field) {
     if (!field.isRequired) {
-        return "~" + exports.toObjectKey(field) + "=?";
+        return "~".concat((0, exports.toObjectKey)(field), "=?");
     }
-    var type = exports.toPrimitiveType(field);
+    var type = (0, exports.toPrimitiveType)(field);
     if (field.isList) {
         if (field.relationName === undefined) {
-            type = "array<" + type + ">";
+            type = "array<".concat(type, ">");
         }
         else {
-            return "~" + exports.toObjectKey(field) + "=?";
+            return "~".concat((0, exports.toObjectKey)(field), "=?");
         }
     }
-    return "~" + exports.toObjectKey(field) + ": " + type;
+    return "~".concat((0, exports.toObjectKey)(field), ": ").concat(type);
 };
+exports.toNamedArgument = toNamedArgument;
 //# sourceMappingURL=helpers.js.map

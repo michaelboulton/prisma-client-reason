@@ -15,7 +15,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
@@ -44,7 +44,7 @@ var Externals_1 = require("./Externals");
 var Model_1 = require("./Generators/Model");
 var Enum_1 = require("./Generators/Enum");
 var clientVersion = require('../package.json').version;
-generator_helper_1.generatorHandler({
+(0, generator_helper_1.generatorHandler)({
     onManifest: function () {
         return {
             prettyName: 'Prisma Client ReasonML',
@@ -66,14 +66,14 @@ generator_helper_1.generatorHandler({
                         throw new Error();
                     }
                     externals = new Externals_1["default"](options.dmmf.datamodel.models);
-                    return [4, fs_extra_1.ensureDir(options.generator.output.value)];
+                    return [4, (0, fs_extra_1.ensureDir)(options.generator.output.value)];
                 case 1:
                     _a.sent();
-                    return [4, fs_extra_1.writeFile(path_1.join(options.generator.output.value, options.generator.config.name + ".res"), "\n        type prismaClient;\n        \n        type batchPayload = {\n          // https://rescript-lang.org/docs/manual/latest/shared-data-types\n          count: float,\n        }\n\n        /* ENUMS */\n        " + options.dmmf.schema.enumTypes.prisma
+                    return [4, (0, fs_extra_1.writeFile)((0, path_1.join)(options.generator.output.value, "".concat(options.generator.config.name, ".res")), "\n        type prismaClient;\n        \n        type batchPayload = {\n          // https://rescript-lang.org/docs/manual/latest/shared-data-types\n          count: float,\n        }\n\n        /* ENUMS */\n        ".concat(options.dmmf.schema.enumTypes.prisma
                             .map(function (type) { return new Enum_1["default"](type).generate(); })
-                            .join('\n\n') + "\n        \n        module rec " + options.dmmf.datamodel.models
+                            .join('\n\n'), "\n        \n        module rec ").concat(options.dmmf.datamodel.models
                             .map(function (model) { return new Model_1["default"](model).generate(); })
-                            .join('\n and \n') + "\n\n        " + externals.generate() + "\n\n        let make = Externals.make;\n        let connect = Externals.connect;\n        let disconnect = Externals.disconnect;\n      ")];
+                            .join('\n and \n'), "\n\n        ").concat(externals.generate(), "\n\n        let make = Externals.make;\n        let connect = Externals.connect;\n        let disconnect = Externals.disconnect;\n      "))];
                 case 2:
                     _a.sent();
                     return [2, true];
