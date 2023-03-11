@@ -41,36 +41,40 @@ let relatedTo = (field: Prisma.field) => {
   })
 }
 
+exception UnknownType({message: string})
+
+/**
+Gets the basic type a field should be based on the prisma type and whether it has relations
+*/
 let toPrimitiveType = (field: Prisma.field) => {
-  switch field.type_ {
-  | "Int" => "int"
-  | "Float" => "float"
-  | "String" => "string"
-  | "Boolean" => "bool"
-  | "DateTime" => "string"
-  | _ =>
-    switch field.relationName {
-    | None => `${field.type_}.t`
-    | Some(relationName) =>
-      switch field.type_ {
-      | "FindMany" => {
-          let findManyRe = %re("/([A-Z][a-z]+)/")
+  switch (field.relationName, field.type_) {
+  | (None, _) =>
+    // No relation - basic type
+    switch field.type_ {
+    | "Int" => "int"
+    | "Float" => "float"
+    | "String" => "string"
+    | "Boolean" => "bool"
+    | "DateTime" => "string"
+    | _ => raise(UnknownType({message: field.type_}))
+    }
+  | (Some(relationName), "FindMany") => {
+      // FindMany relation - uses the special 'find' types generated for this purpose
+      let findManyRe = %re("/([A-Z][a-z]+)/")
 
-          let matches = findManyRe->Js.Re.exec_(relationName)->Belt.Option.getExn->Js.Re.captures
-          let findName = matches[0]->Js.Nullable.toOption->Belt.Option.getExn
+      let matches = findManyRe->Js.Re.exec_(relationName)->Belt.Option.getExn->Js.Re.captures
+      let findName = matches[0]->Js.Nullable.toOption->Belt.Option.getExn
 
-          `Externals.${findName}.${field.type_}.t`
-        }
-      | _ => {
-          let r =
-            (relatedTo(field)->Belt.Result.getExn)[1]->Js.Nullable.toOption->Belt.Option.getExn
+      `Externals.${findName}.${field.type_}.t`
+    }
+  | (_, _) => {
+      // Other relation - find which way the relation is and use the 'where' type generated for that purpose
+      let r = (relatedTo(field)->Belt.Result.getExn)[1]->Js.Nullable.toOption->Belt.Option.getExn
 
-          if r == field.type_ {
-            `${r}.WhereUniqueInput.t`
-          } else {
-            `${field.type_}.WhereUniqueInput.t`
-          }
-        }
+      if r == field.type_ {
+        `${r}.WhereUniqueInput.t`
+      } else {
+        `${field.type_}.WhereUniqueInput.t`
       }
     }
   }

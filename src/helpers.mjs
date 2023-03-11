@@ -5,6 +5,7 @@ import * as Caml_array from "rescript/lib/es6/caml_array.js";
 import * as Belt_Option from "rescript/lib/es6/belt_Option.js";
 import * as Belt_Result from "rescript/lib/es6/belt_Result.js";
 import * as Caml_option from "rescript/lib/es6/caml_option.js";
+import * as Caml_exceptions from "rescript/lib/es6/caml_exceptions.js";
 
 var Prisma = {};
 
@@ -33,9 +34,27 @@ function relatedTo(field) {
               }));
 }
 
+var UnknownType = /* @__PURE__ */Caml_exceptions.create("Helpers.UnknownType");
+
 function toPrimitiveType(field) {
-  var match = field.type;
-  switch (match) {
+  var match = field.relationName;
+  var match$1 = field.type;
+  if (match !== undefined) {
+    if (match$1 === "FindMany") {
+      var findManyRe = /([A-Z][a-z]+)/;
+      var matches = Belt_Option.getExn(Caml_option.null_to_opt(findManyRe.exec(match)));
+      var findName = Belt_Option.getExn(Caml_option.nullable_to_opt(Caml_array.get(matches, 0)));
+      return "Externals." + findName + "." + field.type + ".t";
+    }
+    var r = Belt_Option.getExn(Caml_option.nullable_to_opt(Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1)));
+    if (r === field.type) {
+      return "" + r + ".WhereUniqueInput.t";
+    } else {
+      return "" + field.type + ".WhereUniqueInput.t";
+    }
+  }
+  var match$2 = field.type;
+  switch (match$2) {
     case "Boolean" :
         return "bool";
     case "Float" :
@@ -46,23 +65,11 @@ function toPrimitiveType(field) {
     case "String" :
         return "string";
     default:
-      var relationName = field.relationName;
-      if (relationName === undefined) {
-        return "" + field.type + ".t";
-      }
-      var match$1 = field.type;
-      if (match$1 === "FindMany") {
-        var findManyRe = /([A-Z][a-z]+)/;
-        var matches = Belt_Option.getExn(Caml_option.null_to_opt(findManyRe.exec(relationName)));
-        var findName = Belt_Option.getExn(Caml_option.nullable_to_opt(Caml_array.get(matches, 0)));
-        return "Externals." + findName + "." + field.type + ".t";
-      }
-      var r = Belt_Option.getExn(Caml_option.nullable_to_opt(Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1)));
-      if (r === field.type) {
-        return "" + r + ".WhereUniqueInput.t";
-      } else {
-        return "" + field.type + ".WhereUniqueInput.t";
-      }
+      throw {
+            RE_EXN_ID: UnknownType,
+            message: field.type,
+            Error: new Error()
+          };
   }
 }
 
@@ -81,6 +88,7 @@ export {
   Prisma ,
   Lodash$1 as Lodash,
   relatedTo ,
+  UnknownType ,
   toPrimitiveType ,
   toObjectKey ,
   annotation ,
