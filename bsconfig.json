@@ -4,7 +4,6 @@
   "jsx": {
     "version": 4
   },
-  "refmt": 3,
   "bs-dependencies": [],
   "bs-dev-dependencies": [
     "@glennsl/rescript-jest"
