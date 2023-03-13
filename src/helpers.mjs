@@ -17,14 +17,28 @@ var Lodash$1 = {
   camelCase: camelCase
 };
 
+function ok_or(o, e) {
+  if (o !== undefined) {
+    return {
+            TAG: /* Ok */0,
+            _0: Caml_option.valFromOption(o)
+          };
+  } else {
+    return e;
+  }
+}
+
 function relatedTo(field) {
-  return Belt_Option.mapWithDefault(Belt_Option.flatMap(field.relationName, (function (relationName) {
-                    var re = /([A-Za-z]+?)To([A-Za-z]+)/g;
-                    return Caml_option.null_to_opt(re.exec(relationName));
-                  })), {
-              TAG: /* Error */1,
-              _0: "No matches"
-            }, (function (match) {
+  var relationRegex = /([A-Za-z]+?)To([A-Za-z]+)/g;
+  return Belt_Result.flatMap(Belt_Result.flatMap(ok_or(field.relationName, {
+                      TAG: /* Error */1,
+                      _0: "No relation name"
+                    }), (function (relationName) {
+                    return ok_or(Caml_option.null_to_opt(relationRegex.exec(relationName)), {
+                                TAG: /* Error */1,
+                                _0: "No matches for regex: " + relationName + ""
+                              });
+                  })), (function (match) {
                 var len = match.length;
                 if (len !== 1 && len !== 0) {
                   return {
@@ -42,7 +56,7 @@ function relatedTo(field) {
               }));
 }
 
-var UnknownType = /* @__PURE__ */Caml_exceptions.create("Helpers.UnknownType");
+var BadPrimitiveType = /* @__PURE__ */Caml_exceptions.create("Helpers.BadPrimitiveType");
 
 function toPrimitiveType(field) {
   var match = field.relationName;
@@ -50,11 +64,41 @@ function toPrimitiveType(field) {
   if (match !== undefined) {
     if (match$1 === "FindMany") {
       var findManyRe = /([A-Z][a-z]+)/;
-      var matches = Belt_Option.getExn(Caml_option.null_to_opt(findManyRe.exec(match)));
-      var findName = Belt_Option.getExn(Caml_option.nullable_to_opt(Caml_array.get(matches, 0)));
+      var item = findManyRe.exec(match);
+      var found;
+      if (item !== null) {
+        found = item;
+      } else {
+        throw {
+              RE_EXN_ID: BadPrimitiveType,
+              message: "Could not determine relation name: " + field.type + "",
+              Error: new Error()
+            };
+      }
+      var item$1 = Caml_array.get(found, 0);
+      var findName;
+      if (item$1 == null) {
+        throw {
+              RE_EXN_ID: BadPrimitiveType,
+              message: "Regex matched but returned undefined: " + field.type + "",
+              Error: new Error()
+            };
+      }
+      findName = item$1;
       return "Externals." + findName + "." + field.type + ".t";
     }
-    var r = Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1);
+    var item$2 = relatedTo(field);
+    var matches;
+    if (item$2.TAG === /* Ok */0) {
+      matches = item$2._0;
+    } else {
+      throw {
+            RE_EXN_ID: BadPrimitiveType,
+            message: "Could not find relation (expected to be in the format 'FieldToOtherField'): " + field.type + ": " + item$2._0 + "",
+            Error: new Error()
+          };
+    }
+    var r = Caml_array.get(matches, 1);
     if (r === field.type) {
       return "" + r + ".WhereUniqueInput.t";
     } else {
@@ -74,8 +118,8 @@ function toPrimitiveType(field) {
         return "string";
     default:
       throw {
-            RE_EXN_ID: UnknownType,
-            message: field.type,
+            RE_EXN_ID: BadPrimitiveType,
+            message: "No relation but found unknown type: " + field.type + "",
             Error: new Error()
           };
   }
@@ -92,13 +136,40 @@ function annotation(field) {
   
 }
 
+function toObjectType(field) {
+  return "" + Lodash.camelCase(field.name) + ": " + Lodash.camelCase(field.name) + "";
+}
+
+function toNamedArgument(field) {
+  var type_ = toPrimitiveType(field);
+  var match = field.isList;
+  var match$1 = field.relationName;
+  var match$2 = field.isRequired;
+  if (match$2) {
+    if (match) {
+      if (match$1 !== undefined) {
+        return "~" + Lodash.camelCase(field.name) + ": array<" + type_ + ">";
+      } else {
+        return "~" + Lodash.camelCase(field.name) + "=?";
+      }
+    } else {
+      return "~" + Lodash.camelCase(field.name) + ": " + type_ + "";
+    }
+  } else {
+    return "~" + Lodash.camelCase(field.name) + "=?";
+  }
+}
+
 export {
   Prisma ,
   Lodash$1 as Lodash,
+  ok_or ,
   relatedTo ,
-  UnknownType ,
+  BadPrimitiveType ,
   toPrimitiveType ,
   toObjectKey ,
   annotation ,
+  toObjectType ,
+  toNamedArgument ,
 }
 /* lodash Not a pure module */

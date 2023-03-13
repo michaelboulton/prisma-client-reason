@@ -18,6 +18,7 @@
     "clean:build": "rm -rf dist",
     "start": "nodemon",
     "build": "rescript && tsc && chmod +x ./dist/generator.js",
+    "tsc:start": "tsc -w",
     "rebuild": "run-s clean:build build",
     "res:start": "rescript build -w",
     "resetup": "run-s clean setup",

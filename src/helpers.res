@@ -34,17 +34,27 @@ module Lodash: {
   let camelCase: string => string = s => default->camelCase_(s)
 }
 
+let ok_or: (option<'a>, Belt.Result.t<'a, 'b>) => Belt.Result.t<'a, 'b> = (o, e) =>
+  switch o {
+  | Some(x) => Ok(x)
+  | None => e
+  }
+
 /**
 Gets the names of types in a relation
 */
 let relatedTo = (field: Prisma.field) => {
-  field.relationName
-  ->Belt.Option.flatMap(relationName => {
-    let re = %re("/([A-Za-z]+?)To([A-Za-z]+)/g")
+  // Note: this can't be defined globally
+  let relationRegex = %re("/([A-Za-z]+?)To([A-Za-z]+)/g")
 
-    re->Js.Re.exec_(relationName)
+  field.relationName
+  ->ok_or(Error("No relation name"))
+  ->Belt.Result.flatMap(relationName => {
+    relationRegex
+    ->Js.Re.exec_(relationName)
+    ->ok_or(Belt.Result.Error(`No matches for regex: ${relationName}`))
   })
-  ->Belt.Option.mapWithDefault(Belt.Result.Error("No matches"), match => {
+  ->Belt.Result.flatMap(match => {
     let captures = match->Js.Re.captures
 
     switch captures {
@@ -57,12 +67,11 @@ let relatedTo = (field: Prisma.field) => {
   })
 }
 
-exception UnknownType({message: string})
+exception BadPrimitiveType({message: string})
 
 /**
 Gets the basic type a field should be based on the prisma type and whether it has relations
 */
-@genType
 let toPrimitiveType = (field: Prisma.field) => {
   switch (field.relationName, field.type_) {
   | (None, _) =>
@@ -73,20 +82,40 @@ let toPrimitiveType = (field: Prisma.field) => {
     | "String" => "string"
     | "Boolean" => "bool"
     | "DateTime" => "string"
-    | _ => raise(UnknownType({message: field.type_}))
+    | _ => raise(BadPrimitiveType({message: `No relation but found unknown type: ${field.type_}`}))
     }
   | (Some(relationName), "FindMany") => {
       // FindMany relation - uses the special 'find' types generated for this purpose
       let findManyRe = %re("/([A-Z][a-z]+)/")
 
-      let matches = findManyRe->Js.Re.exec_(relationName)->Belt.Option.getExn->Js.Re.captures
-      let findName = matches[0]->Js.Nullable.toOption->Belt.Option.getExn
+      let found = switch findManyRe->Js.Re.exec_(relationName) {
+      | Some(item) => item
+      | None =>
+        raise(BadPrimitiveType({message: `Could not determine relation name: ${field.type_}`}))
+      }
+
+      let matches = found->Js.Re.captures
+
+      let findName = switch matches[0]->Js.Nullable.toOption {
+      | Some(item) => item
+      | None =>
+        raise(BadPrimitiveType({message: `Regex matched but returned undefined: ${field.type_}`}))
+      }
 
       `Externals.${findName}.${field.type_}.t`
     }
   | (_, _) => {
       // Other relation - find which way the relation is and use the 'where' type generated for that purpose
-      let r = (relatedTo(field)->Belt.Result.getExn)[1]
+      let matches = switch relatedTo(field) {
+      | Ok(item) => item
+      | Error(msg) =>
+        raise(
+          BadPrimitiveType({
+            message: `Could not find relation (expected to be in the format 'FieldToOtherField'): ${field.type_}: ${msg}`,
+          }),
+        )
+      }
+      let r = matches[1]
 
       if r == field.type_ {
         `${r}.WhereUniqueInput.t`
@@ -100,7 +129,6 @@ let toPrimitiveType = (field: Prisma.field) => {
 /**
 Convert to a field name for use in reason
 */
-@genType
 let toObjectKey = (field: Prisma.field) => Lodash.camelCase(field.name)
 
 /**
@@ -115,7 +143,31 @@ let annotation = (field: Prisma.field) =>
 
 /** converts from a field to a string */
 type fieldPrinters = {
-  objectType: Prisma.field => string,
-  namedArgumentType: Prisma.field => string,
-  namedArgument: Prisma.field => string,
+  toObjectType: Prisma.field => string,
+  toNamedArgumentType: Prisma.field => string,
+  toNamedArgument: Prisma.field => string,
+  toObjectKeyValue: Prisma.field => string,
+}
+
+@genType
+let toObjectType: Prisma.field => string = field =>
+  switch (field.isList, field.relationName, field.isRequired) {
+  | (_, _, _) => `${toObjectKey(field)}: ${toObjectKey(field)}`
+  }
+
+@genType
+let toNamedArgument: Prisma.field => string = field => {
+  let type_ = toPrimitiveType(field)
+
+  switch (field.isList, field.relationName, field.isRequired) {
+  // If it's not required, this can be introspected from the actual type specified in toNamedArgumentType
+  | (_, _, false)
+  | // If it's a list but has no relation, also can just be introspected
+  (true, None, _) =>
+    `~${toObjectKey(field)}=?`
+  // If it's not a list, use the type from toPrimitiveType which takes relations into account
+  | (false, _, _) => `~${toObjectKey(field)}: ${type_}`
+  // If it's a list and has a relation, it should be an array
+  | (true, Some(_), _) => `~${toObjectKey(field)}: array<${type_}>`
+  }
 }

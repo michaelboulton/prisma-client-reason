@@ -1,12 +1,12 @@
 open Jest
 open Expect
 
-type camelCaseTest = {
+type definiteOutputTest = {
   input: string,
   expected: string,
 }
 
-type annotationTest = {
+type maybeOutputTest = {
   input: string,
   maybeExpected: option<string>,
 }
@@ -17,7 +17,8 @@ let toField = (
   ~isRequired: bool=false,
   ~isList: bool=false,
   ~isUnique: bool=false,
-  ~type_: string="ExampleType",
+  ~type_: string="Int",
+  ~relationName: option<string>=?,
   (),
 ) => {
   open! Helpers.Prisma
@@ -29,6 +30,7 @@ let toField = (
     isList,
     isUnique,
     type_,
+    ?relationName,
   }
 }
 
@@ -49,5 +51,54 @@ describe("helpers", () => {
       {input: "hello", maybeExpected: None},
     },
     test => toField(~name=test.input, ())->Helpers.annotation->expect->toBe(test.maybeExpected),
+  )
+
+  testAll(
+    "named argument",
+    Array.to_list([
+      {
+        // Not required => implicit type
+        "input": toField(~isList=false, ~isRequired=false, ()),
+        "type": "~exampleName=?",
+      },
+      {
+        // Not required, but a list => still implicit type
+        "input": toField(~isList=false, ~isRequired=true, ()),
+        "type": "~exampleName: int",
+      },
+      {
+        // Required list => array type
+        "input": toField(~isList=true, ~isRequired=true, ()),
+        "type": "~exampleName=?",
+      },
+      {
+        // Relation but not required => optional still
+        "input": toField(
+          ~isList=true,
+          ~isRequired=false,
+          ~name="Cool",
+          ~type_="One",
+          ~relationName="CoolToOne",
+          (),
+        ),
+        "type": "~cool=?",
+      },
+      {
+        // Relation and required => array
+        // FIXME this logic is a bit wrong
+        "input": toField(
+          ~isList=true,
+          ~isRequired=true,
+          ~name="Cool",
+          ~type_="One",
+          ~relationName="CoolToOne",
+          (),
+        ),
+        "type": "~cool: array<One.WhereUniqueInput.t>",
+      },
+    ]),
+    test => {
+      test["input"]->Helpers.toNamedArgument->expect->toBe(test["type"])
+    },
   )
 })
