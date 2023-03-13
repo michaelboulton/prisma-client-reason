@@ -59,28 +59,51 @@ Jest.describe("helpers", (function (param) {
             }, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.annotation(toField(undefined, test.input, undefined, undefined, undefined, undefined, undefined, undefined))), test.maybeExpected);
               }));
-        Jest.testAll("named argument", $$Array.to_list([
-                  {
-                    input: toField(undefined, undefined, false, false, undefined, undefined, undefined, undefined),
-                    type: "~exampleName=?"
-                  },
-                  {
-                    input: toField(undefined, undefined, true, false, undefined, undefined, undefined, undefined),
-                    type: "~exampleName: int"
-                  },
-                  {
-                    input: toField(undefined, undefined, true, true, undefined, undefined, undefined, undefined),
-                    type: "~exampleName=?"
-                  },
-                  {
-                    input: toField(undefined, "Cool", false, true, undefined, "One", "CoolToOne", undefined),
-                    type: "~cool=?"
-                  },
-                  {
-                    input: toField(undefined, "Cool", true, true, undefined, "One", "CoolToOne", undefined),
-                    type: "~cool: array<One.WhereUniqueInput.t>"
-                  }
-                ]), (function (test) {
+      }));
+
+Jest.describe("argument printers without relations", (function (param) {
+        var testExamples = $$Array.to_list([
+              {
+                input: toField(undefined, undefined, false, false, undefined, undefined, undefined, undefined),
+                namedArgument: "~exampleName=?",
+                toNamedArgumentType: "~exampleName: array<int>=?"
+              },
+              {
+                input: toField(undefined, undefined, true, false, undefined, undefined, undefined, undefined),
+                namedArgument: "~exampleName: int",
+                toNamedArgumentType: "~exampleName: int"
+              },
+              {
+                input: toField(undefined, undefined, true, true, undefined, undefined, undefined, undefined),
+                namedArgument: "~exampleName=?",
+                toNamedArgumentType: "~exampleName: array<int>"
+              },
+              {
+                input: toField(undefined, undefined, false, true, undefined, undefined, undefined, undefined),
+                namedArgument: "~exampleName=?",
+                toNamedArgumentType: "~exampleName: int=?"
+              }
+            ]);
+        Jest.testAll("named argument", testExamples, (function (test) {
+                return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toNamedArgument(test.input)), test.namedArgument);
+              }));
+        Jest.testAll("named argument type", testExamples, (function (test) {
+                return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toNamedArgumentType(test.input)), test.toNamedArgumentType);
+              }));
+      }));
+
+Jest.describe("argument printers with relations", (function (param) {
+        var testExamples = $$Array.to_list([
+              {
+                input: toField(undefined, "Cool", false, true, undefined, "One", "CoolToOne", undefined),
+                type: "~cool=?"
+              },
+              {
+                input: toField(undefined, "Cool", true, true, undefined, "One", "CoolToOne", undefined),
+                type: "~cool: array<One.WhereUniqueInput.t>"
+              }
+            ]);
+        Jest.testAll("named argument", testExamples, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toNamedArgument(test.input)), test.type);
               }));
       }));

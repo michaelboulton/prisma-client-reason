@@ -52,53 +52,75 @@ describe("helpers", () => {
     },
     test => toField(~name=test.input, ())->Helpers.annotation->expect->toBe(test.maybeExpected),
   )
+})
 
-  testAll(
-    "named argument",
-    Array.to_list([
-      {
-        // Not required => implicit type
-        "input": toField(~isList=false, ~isRequired=false, ()),
-        "type": "~exampleName=?",
-      },
-      {
-        // Not required, but a list => still implicit type
-        "input": toField(~isList=false, ~isRequired=true, ()),
-        "type": "~exampleName: int",
-      },
-      {
-        // Required list => array type
-        "input": toField(~isList=true, ~isRequired=true, ()),
-        "type": "~exampleName=?",
-      },
-      {
-        // Relation but not required => optional still
-        "input": toField(
-          ~isList=true,
-          ~isRequired=false,
-          ~name="Cool",
-          ~type_="One",
-          ~relationName="CoolToOne",
-          (),
-        ),
-        "type": "~cool=?",
-      },
-      {
-        // Relation and required => array
-        // FIXME this logic is a bit wrong
-        "input": toField(
-          ~isList=true,
-          ~isRequired=true,
-          ~name="Cool",
-          ~type_="One",
-          ~relationName="CoolToOne",
-          (),
-        ),
-        "type": "~cool: array<One.WhereUniqueInput.t>",
-      },
-    ]),
-    test => {
-      test["input"]->Helpers.toNamedArgument->expect->toBe(test["type"])
+describe("argument printers without relations", () => {
+  let testExamples = Array.to_list([
+    {
+      // Not required => implicit type
+      "input": toField(~isList=false, ~isRequired=false, ()),
+      "namedArgument": "~exampleName=?",
+      "toNamedArgumentType": "~exampleName: array<int>=?",
     },
-  )
+    {
+      // Not required, but a list => still implicit type
+      "input": toField(~isList=false, ~isRequired=true, ()),
+      "namedArgument": "~exampleName: int",
+      "toNamedArgumentType": "~exampleName: int",
+    },
+    {
+      // Required list => array type
+      "input": toField(~isList=true, ~isRequired=true, ()),
+      "namedArgument": "~exampleName=?",
+      "toNamedArgumentType": "~exampleName: array<int>",
+    },
+    {
+      // Required list => array type
+      "input": toField(~isList=true, ~isRequired=false, ()),
+      "namedArgument": "~exampleName=?",
+      "toNamedArgumentType": "~exampleName: int=?",
+    },
+  ])
+
+  testAll("named argument", testExamples, test => {
+    test["input"]->Helpers.toNamedArgument->expect->toBe(test["namedArgument"])
+  })
+
+  testAll("named argument type", testExamples, test => {
+    test["input"]->Helpers.toNamedArgumentType->expect->toBe(test["toNamedArgumentType"])
+  })
+})
+
+describe("argument printers with relations", () => {
+  let testExamples = Array.to_list([
+    {
+      // Relation but not required => optional still
+      "input": toField(
+        ~isList=true,
+        ~isRequired=false,
+        ~name="Cool",
+        ~type_="One",
+        ~relationName="CoolToOne",
+        (),
+      ),
+      "type": "~cool=?",
+    },
+    {
+      // Relation and required => array
+      // FIXME this logic is a bit wrong
+      "input": toField(
+        ~isList=true,
+        ~isRequired=true,
+        ~name="Cool",
+        ~type_="One",
+        ~relationName="CoolToOne",
+        (),
+      ),
+      "type": "~cool: array<One.WhereUniqueInput.t>",
+    },
+  ])
+
+  testAll("named argument", testExamples, test => {
+    test["input"]->Helpers.toNamedArgument->expect->toBe(test["type"])
+  })
 })

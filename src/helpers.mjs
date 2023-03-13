@@ -160,6 +160,33 @@ function toNamedArgument(field) {
   }
 }
 
+function toNamedArgumentType(field) {
+  var type_ = toPrimitiveType(field);
+  var match = field.type;
+  var match$1 = field.isList;
+  var match$2 = field.relationName;
+  var match$3 = field.isRequired;
+  var tmp;
+  var exit = 0;
+  if (match$1) {
+    if (match$2 !== undefined) {
+      exit = 1;
+    } else {
+      tmp = match$3 ? "array<" + type_ + ">" : "" + type_ + "=?";
+    }
+  } else if (match$2 !== undefined) {
+    exit = 1;
+  } else {
+    tmp = match$3 ? "" + type_ + "" : "array<" + type_ + ">=?";
+  }
+  if (exit === 1) {
+    tmp = match === "Boolean" ? "bool" : (
+        match$3 ? "" + type_ + "=?" : "" + type_ + "=?"
+      );
+  }
+  return "~" + Lodash.camelCase(field.name) + ": " + tmp;
+}
+
 export {
   Prisma ,
   Lodash$1 as Lodash,
@@ -171,5 +198,6 @@ export {
   annotation ,
   toObjectType ,
   toNamedArgument ,
+  toNamedArgumentType ,
 }
 /* lodash Not a pure module */

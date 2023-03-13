@@ -171,3 +171,25 @@ let toNamedArgument: Prisma.field => string = field => {
   | (true, Some(_), _) => `~${toObjectKey(field)}: array<${type_}>`
   }
 }
+
+@genType
+let toNamedArgumentType: Prisma.field => string = field => {
+  let type_ = toPrimitiveType(field)
+
+  `~${toObjectKey(field)}: ` ++
+  switch (field.type_, field.isList, field.relationName, field.isRequired) {
+  // list, no relation, is required => array
+  | (_, true, None, true) => `array<${type_}>`
+  // not a list, no relation, is required => the raw type
+  | (_, false, None, true) => `${type_}`
+  // whether its a list or not, if it has no relation, not required => optional
+  | (_, false, None, false) => `array<${type_}>=?`
+  | (_, true, None, false) => `${type_}=?`
+  // If it has a relation and its a boolean type, it's a "select" field, so it's just a bool
+  | ("Boolean", _, Some(_), _) => `bool`
+  // Non-required relation field => Optional
+  | (_, _, Some(_), false) => `${type_}=?`
+  // Anything else => raw type
+  | (_) => `${type_}=?`
+  }
+}

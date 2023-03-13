@@ -24,3 +24,5 @@ export interface IPrisma_field {
 export const toObjectType: (field:IPrisma_field) => string = helpersBS.toObjectType;
 
 export const toNamedArgument: (field:IPrisma_field) => string = helpersBS.toNamedArgument;
+
+export const toNamedArgumentType: (field:IPrisma_field) => string = helpersBS.toNamedArgumentType;
