@@ -6,7 +6,7 @@ import * as Helpers from "../src/helpers.mjs";
 
 function toField(kindOpt, nameOpt, isRequiredOpt, isListOpt, isUniqueOpt, type_Opt, relationName, param) {
   var kind = kindOpt !== undefined ? kindOpt : "object";
-  var name = nameOpt !== undefined ? nameOpt : "ExampleName";
+  var name = nameOpt !== undefined ? nameOpt : "exampleName";
   var isRequired = isRequiredOpt !== undefined ? isRequiredOpt : false;
   var isList = isListOpt !== undefined ? isListOpt : false;
   var isUnique = isUniqueOpt !== undefined ? isUniqueOpt : false;
@@ -62,32 +62,45 @@ Jest.describe("helpers", (function (param) {
       }));
 
 Jest.describe("argument printers without relations", (function (param) {
-        var testExamples = $$Array.to_list([
-              {
-                input: toField(undefined, undefined, true, true, undefined, undefined, undefined, undefined),
-                namedArgument: "~exampleName=?",
-                toNamedArgumentType: "~exampleName: array<int>",
-                toObjectKeyValue: "exampleName: exampleName"
-              },
-              {
-                input: toField(undefined, undefined, true, false, undefined, undefined, undefined, undefined),
-                namedArgument: "~exampleName: int",
-                toNamedArgumentType: "~exampleName: int",
-                toObjectKeyValue: "exampleName: exampleName"
-              },
-              {
-                input: toField(undefined, undefined, false, false, undefined, undefined, undefined, undefined),
-                namedArgument: "~exampleName=?",
-                toNamedArgumentType: "~exampleName: array<int>=?",
-                toObjectKeyValue: "exampleName: exampleName"
-              },
-              {
+        var testExamples_0 = {
+          input: toField(undefined, undefined, true, false, undefined, undefined, undefined, undefined),
+          namedArgument: "~exampleName: int",
+          toNamedArgumentType: "~exampleName: int",
+          toObjectKeyValue: "exampleName: exampleName",
+          toObjectType: "exampleName: int"
+        };
+        var testExamples_1 = {
+          hd: {
+            input: toField(undefined, undefined, true, true, undefined, undefined, undefined, undefined),
+            namedArgument: "~exampleName=?",
+            toNamedArgumentType: "~exampleName: array<int>",
+            toObjectKeyValue: "exampleName: exampleName",
+            toObjectType: "exampleName: array<int>"
+          },
+          tl: {
+            hd: {
+              input: toField(undefined, undefined, false, false, undefined, undefined, undefined, undefined),
+              namedArgument: "~exampleName=?",
+              toNamedArgumentType: "~exampleName: array<int>=?",
+              toObjectKeyValue: "exampleName?",
+              toObjectType: "exampleName?: int"
+            },
+            tl: {
+              hd: {
                 input: toField(undefined, undefined, false, true, undefined, undefined, undefined, undefined),
                 namedArgument: "~exampleName=?",
                 toNamedArgumentType: "~exampleName: int=?",
-                toObjectKeyValue: "exampleName: exampleName"
-              }
-            ]);
+                toObjectKeyValue: "exampleName?",
+                toObjectType: "exampleName?: array<int>"
+              },
+              tl: /* [] */0
+            }
+          }
+        };
+        var testExamples = {
+          hd: testExamples_0,
+          tl: testExamples_1
+        };
         Jest.testAll("named argument", testExamples, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toNamedArgument(test.input)), test.namedArgument);
               }));
@@ -96,6 +109,9 @@ Jest.describe("argument printers without relations", (function (param) {
               }));
         Jest.testAll("object key value", testExamples, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toObjectKeyValue(test.input)), test.toObjectKeyValue);
+              }));
+        Jest.testAll("object type", testExamples, (function (test) {
+                return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toObjectType(test.input)), test.toObjectType);
               }));
       }));
 

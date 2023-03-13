@@ -139,14 +139,42 @@ function annotation(field) {
 var Todo = /* @__PURE__ */Caml_exceptions.create("Helpers.Todo");
 
 function toObjectType(field) {
-  throw {
-        RE_EXN_ID: Todo,
-        Error: new Error()
-      };
+  var key = Lodash.camelCase(field.name);
+  var key$1 = Belt_Option.mapWithDefault(annotation(field), key, (function (a) {
+          return "" + a + " " + key + "";
+        }));
+  var type_ = toPrimitiveType(field);
+  var match = field.isList;
+  var match$1 = field.relationName;
+  var match$2 = field.isRequired;
+  var recordType;
+  if (match) {
+    if (match$1 !== undefined) {
+      throw {
+            RE_EXN_ID: Todo,
+            Error: new Error()
+          };
+    }
+    recordType = match$2 ? "array<" + type_ + ">" : "option<array<" + type_ + ">>";
+  } else {
+    if (match$1 !== undefined) {
+      throw {
+            RE_EXN_ID: Todo,
+            Error: new Error()
+          };
+    }
+    recordType = match$2 ? "option<" + type_ + ">" : "" + type_ + "";
+  }
+  return "" + key$1 + ": " + recordType + "";
 }
 
 function toObjectKeyValue(field) {
-  return "" + Lodash.camelCase(field.name) + ": " + Lodash.camelCase(field.name) + "";
+  var match = field.isRequired;
+  if (match) {
+    return "" + Lodash.camelCase(field.name) + ": " + Lodash.camelCase(field.name) + "";
+  } else {
+    return "?" + Lodash.camelCase(field.name) + "";
+  }
 }
 
 function toNamedArgument(field) {

@@ -13,7 +13,7 @@ type maybeOutputTest = {
 
 let toField = (
   ~kind: Helpers.Prisma.fieldKind=#object,
-  ~name: string="ExampleName",
+  ~name: string="exampleName",
   ~isRequired: bool=false,
   ~isList: bool=false,
   ~isUnique: bool=false,
@@ -55,36 +55,40 @@ describe("helpers", () => {
 })
 
 describe("argument printers without relations", () => {
-  let testExamples = Array.to_list([
-    {
-      // Required list => array type
-      "input": toField(~isList=true, ~isRequired=true, ()),
-      "namedArgument": "~exampleName=?",
-      "toNamedArgumentType": "~exampleName: array<int>",
-      "toObjectKeyValue": "exampleName: exampleName",
-    },
+  let testExamples = list{
     {
       // Not required, but a list => still implicit type
       "input": toField(~isList=false, ~isRequired=true, ()),
       "namedArgument": "~exampleName: int",
       "toNamedArgumentType": "~exampleName: int",
       "toObjectKeyValue": "exampleName: exampleName",
+      "toObjectType": "exampleName: int",
+    },
+    {
+      // Required list => array type
+      "input": toField(~isList=true, ~isRequired=true, ()),
+      "namedArgument": "~exampleName=?",
+      "toNamedArgumentType": "~exampleName: array<int>",
+      "toObjectKeyValue": "exampleName: exampleName",
+      "toObjectType": "exampleName: array<int>",
     },
     {
       // Not required => implicit type
       "input": toField(~isList=false, ~isRequired=false, ()),
       "namedArgument": "~exampleName=?",
       "toNamedArgumentType": "~exampleName: array<int>=?",
-      "toObjectKeyValue": "exampleName: exampleName",
+      "toObjectKeyValue": "exampleName?",
+      "toObjectType": "exampleName?: int",
     },
     {
       // Required list => array type
       "input": toField(~isList=true, ~isRequired=false, ()),
       "namedArgument": "~exampleName=?",
       "toNamedArgumentType": "~exampleName: int=?",
-      "toObjectKeyValue": "exampleName: exampleName",
+      "toObjectKeyValue": "exampleName?",
+      "toObjectType": "exampleName?: array<int>",
     },
-  ])
+  }
 
   testAll("named argument", testExamples, test => {
     test["input"]->Helpers.toNamedArgument->expect->toBe(test["namedArgument"])
@@ -96,6 +100,10 @@ describe("argument printers without relations", () => {
 
   testAll("object key value", testExamples, test => {
     test["input"]->Helpers.toObjectKeyValue->expect->toBe(test["toObjectKeyValue"])
+  })
+
+  testAll("object type", testExamples, test => {
+    test["input"]->Helpers.toObjectType->expect->toBe(test["toObjectType"])
   })
 })
 

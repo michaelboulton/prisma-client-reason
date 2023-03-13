@@ -141,28 +141,48 @@ let annotation = (field: Prisma.field) =>
     None
   }
 
-/** converts from a field to a string */
-type fieldPrinters = {
-  toObjectType: Prisma.field => string,
-  toNamedArgumentType: Prisma.field => string,
-  toNamedArgument: Prisma.field => string,
-  toObjectKeyValue: Prisma.field => string,
-}
+exception Todo
 
-exception Todo()
-
+/**
+Returns the type of the field in the object
+*/
 @genType
-let toObjectType: Prisma.field => string = field =>
-  switch (field.isList, field.relationName, field.isRequired) {
-  | (_, _, _) => raise(Todo)
+let toObjectType: Prisma.field => string = field => {
+  let key = toObjectKey(field)
+  let key = annotation(field)->Belt.Option.mapWithDefault(key, a => `${a} ${key}`)
+
+  // let key = annotation(field);
+
+  let type_ = toPrimitiveType(field)
+
+  let recordType = switch (field.type_, field.isList, field.relationName, field.isRequired) {
+  // Non-required list => optional array
+  | (_, true, None, false) => `option<array<${type_}>>`
+  // required list => array
+  | (_, true, None, true) => `array<${type_}>`
+  // non-required non-list => optional type
+  | (_, false, None, true) => `option<${type_}>`
+  // required non-list => raw type
+  | (_, false, None, false) => `${type_}`
+  | _ => raise(Todo)
   }
 
+  `${key}: ${recordType}`
+}
+
+/**
+The assignment in the actual construction of the record type
+*/
 @genType
 let toObjectKeyValue: Prisma.field => string = field =>
   switch (field.isList, field.relationName, field.isRequired) {
-  | (_, _, _) => `${toObjectKey(field)}: ${toObjectKey(field)}`
+  | (_, _, true) => `${toObjectKey(field)}: ${toObjectKey(field)}`
+  | (_, _, false) => `?${toObjectKey(field)}`
   }
 
+/**
+The argument in the implementation of the make function
+*/
 @genType
 let toNamedArgument: Prisma.field => string = field => {
   let type_ = toPrimitiveType(field)
@@ -180,6 +200,9 @@ let toNamedArgument: Prisma.field => string = field => {
   }
 }
 
+/**
+The argument in the interface of the make function
+*/
 @genType
 let toNamedArgumentType: Prisma.field => string = field => {
   let type_ = toPrimitiveType(field)
@@ -198,6 +221,6 @@ let toNamedArgumentType: Prisma.field => string = field => {
   // Non-required relation field => Optional
   | (_, _, Some(_), false) => `${type_}=?`
   // Anything else => raw type
-  | (_) => `${type_}=?`
+  | _ => `${type_}=?`
   }
 }
