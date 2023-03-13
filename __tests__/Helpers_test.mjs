@@ -64,24 +64,28 @@ Jest.describe("helpers", (function (param) {
 Jest.describe("argument printers without relations", (function (param) {
         var testExamples = $$Array.to_list([
               {
-                input: toField(undefined, undefined, false, false, undefined, undefined, undefined, undefined),
+                input: toField(undefined, undefined, true, true, undefined, undefined, undefined, undefined),
                 namedArgument: "~exampleName=?",
-                toNamedArgumentType: "~exampleName: array<int>=?"
+                toNamedArgumentType: "~exampleName: array<int>",
+                toObjectKeyValue: "exampleName: exampleName"
               },
               {
                 input: toField(undefined, undefined, true, false, undefined, undefined, undefined, undefined),
                 namedArgument: "~exampleName: int",
-                toNamedArgumentType: "~exampleName: int"
+                toNamedArgumentType: "~exampleName: int",
+                toObjectKeyValue: "exampleName: exampleName"
               },
               {
-                input: toField(undefined, undefined, true, true, undefined, undefined, undefined, undefined),
+                input: toField(undefined, undefined, false, false, undefined, undefined, undefined, undefined),
                 namedArgument: "~exampleName=?",
-                toNamedArgumentType: "~exampleName: array<int>"
+                toNamedArgumentType: "~exampleName: array<int>=?",
+                toObjectKeyValue: "exampleName: exampleName"
               },
               {
                 input: toField(undefined, undefined, false, true, undefined, undefined, undefined, undefined),
                 namedArgument: "~exampleName=?",
-                toNamedArgumentType: "~exampleName: int=?"
+                toNamedArgumentType: "~exampleName: int=?",
+                toObjectKeyValue: "exampleName: exampleName"
               }
             ]);
         Jest.testAll("named argument", testExamples, (function (test) {
@@ -89,6 +93,9 @@ Jest.describe("argument printers without relations", (function (param) {
               }));
         Jest.testAll("named argument type", testExamples, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toNamedArgumentType(test.input)), test.toNamedArgumentType);
+              }));
+        Jest.testAll("object key value", testExamples, (function (test) {
+                return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toObjectKeyValue(test.input)), test.toObjectKeyValue);
               }));
       }));
 

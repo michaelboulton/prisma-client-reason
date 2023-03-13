@@ -136,7 +136,16 @@ function annotation(field) {
   
 }
 
+var Todo = /* @__PURE__ */Caml_exceptions.create("Helpers.Todo");
+
 function toObjectType(field) {
+  throw {
+        RE_EXN_ID: Todo,
+        Error: new Error()
+      };
+}
+
+function toObjectKeyValue(field) {
   return "" + Lodash.camelCase(field.name) + ": " + Lodash.camelCase(field.name) + "";
 }
 
@@ -196,7 +205,9 @@ export {
   toPrimitiveType ,
   toObjectKey ,
   annotation ,
+  Todo ,
   toObjectType ,
+  toObjectKeyValue ,
   toNamedArgument ,
   toNamedArgumentType ,
 }

@@ -149,8 +149,16 @@ type fieldPrinters = {
   toObjectKeyValue: Prisma.field => string,
 }
 
+exception Todo()
+
 @genType
 let toObjectType: Prisma.field => string = field =>
+  switch (field.isList, field.relationName, field.isRequired) {
+  | (_, _, _) => raise(Todo)
+  }
+
+@genType
+let toObjectKeyValue: Prisma.field => string = field =>
   switch (field.isList, field.relationName, field.isRequired) {
   | (_, _, _) => `${toObjectKey(field)}: ${toObjectKey(field)}`
   }

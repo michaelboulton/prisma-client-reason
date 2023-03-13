@@ -57,28 +57,32 @@ describe("helpers", () => {
 describe("argument printers without relations", () => {
   let testExamples = Array.to_list([
     {
-      // Not required => implicit type
-      "input": toField(~isList=false, ~isRequired=false, ()),
+      // Required list => array type
+      "input": toField(~isList=true, ~isRequired=true, ()),
       "namedArgument": "~exampleName=?",
-      "toNamedArgumentType": "~exampleName: array<int>=?",
+      "toNamedArgumentType": "~exampleName: array<int>",
+      "toObjectKeyValue": "exampleName: exampleName",
     },
     {
       // Not required, but a list => still implicit type
       "input": toField(~isList=false, ~isRequired=true, ()),
       "namedArgument": "~exampleName: int",
       "toNamedArgumentType": "~exampleName: int",
+      "toObjectKeyValue": "exampleName: exampleName",
     },
     {
-      // Required list => array type
-      "input": toField(~isList=true, ~isRequired=true, ()),
+      // Not required => implicit type
+      "input": toField(~isList=false, ~isRequired=false, ()),
       "namedArgument": "~exampleName=?",
-      "toNamedArgumentType": "~exampleName: array<int>",
+      "toNamedArgumentType": "~exampleName: array<int>=?",
+      "toObjectKeyValue": "exampleName: exampleName",
     },
     {
       // Required list => array type
       "input": toField(~isList=true, ~isRequired=false, ()),
       "namedArgument": "~exampleName=?",
       "toNamedArgumentType": "~exampleName: int=?",
+      "toObjectKeyValue": "exampleName: exampleName",
     },
   ])
 
@@ -88,6 +92,10 @@ describe("argument printers without relations", () => {
 
   testAll("named argument type", testExamples, test => {
     test["input"]->Helpers.toNamedArgumentType->expect->toBe(test["toNamedArgumentType"])
+  })
+
+  testAll("object key value", testExamples, test => {
+    test["input"]->Helpers.toObjectKeyValue->expect->toBe(test["toObjectKeyValue"])
   })
 })
 
