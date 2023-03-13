@@ -125,7 +125,7 @@ function toPrimitiveType(field) {
   }
 }
 
-function toObjectKey(field) {
+function toObjectKeyName(field) {
   return Lodash.camelCase(field.name);
 }
 
@@ -139,33 +139,37 @@ function annotation(field) {
 var Todo = /* @__PURE__ */Caml_exceptions.create("Helpers.Todo");
 
 function toObjectType(field) {
-  var key = Lodash.camelCase(field.name);
-  var key$1 = Belt_Option.mapWithDefault(annotation(field), key, (function (a) {
-          return "" + a + " " + key + "";
-        }));
+  var keyName = Lodash.camelCase(field.name);
+  var match = field.isRequired;
+  var match$1 = annotation(field);
+  var key = match ? (
+      match$1 !== undefined ? "" + match$1 + " " + keyName + "" : "" + keyName + ""
+    ) : (
+      match$1 !== undefined ? "" + match$1 + " " + keyName + "?" : "" + keyName + "?"
+    );
   var type_ = toPrimitiveType(field);
-  var match = field.isList;
-  var match$1 = field.relationName;
-  var match$2 = field.isRequired;
+  var match$2 = field.isList;
+  var match$3 = field.relationName;
+  var match$4 = field.isRequired;
   var recordType;
-  if (match) {
-    if (match$1 !== undefined) {
+  if (match$2) {
+    if (match$3 !== undefined) {
       throw {
             RE_EXN_ID: Todo,
             Error: new Error()
           };
     }
-    recordType = match$2 ? "array<" + type_ + ">" : "option<array<" + type_ + ">>";
+    recordType = match$4 ? "array<" + type_ + ">" : "array<" + type_ + ">";
   } else {
-    if (match$1 !== undefined) {
+    if (match$3 !== undefined) {
       throw {
             RE_EXN_ID: Todo,
             Error: new Error()
           };
     }
-    recordType = match$2 ? "option<" + type_ + ">" : "" + type_ + "";
+    recordType = match$4 ? "" + type_ + "" : "" + type_ + "";
   }
-  return "" + key$1 + ": " + recordType + "";
+  return "" + key + ": " + recordType + "";
 }
 
 function toObjectKeyValue(field) {
@@ -231,7 +235,7 @@ export {
   relatedTo ,
   BadPrimitiveType ,
   toPrimitiveType ,
-  toObjectKey ,
+  toObjectKeyName ,
   annotation ,
   Todo ,
   toObjectType ,

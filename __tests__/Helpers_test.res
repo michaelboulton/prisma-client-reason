@@ -42,7 +42,7 @@ describe("helpers", () => {
       {input: "hello", expected: "hello"},
       {input: "AnotherThing", expected: "anotherThing"},
     },
-    test => toField(~name=test.input, ())->Helpers.toObjectKey->expect->toBe(test.expected),
+    test => toField(~name=test.input, ())->Helpers.toObjectKeyName->expect->toBe(test.expected),
   )
   testAll(
     "annotation",
@@ -77,7 +77,7 @@ describe("argument printers without relations", () => {
       "input": toField(~isList=false, ~isRequired=false, ()),
       "namedArgument": "~exampleName=?",
       "toNamedArgumentType": "~exampleName: array<int>=?",
-      "toObjectKeyValue": "exampleName?",
+      "toObjectKeyValue": "?exampleName",
       "toObjectType": "exampleName?: int",
     },
     {
@@ -85,7 +85,7 @@ describe("argument printers without relations", () => {
       "input": toField(~isList=true, ~isRequired=false, ()),
       "namedArgument": "~exampleName=?",
       "toNamedArgumentType": "~exampleName: int=?",
-      "toObjectKeyValue": "exampleName?",
+      "toObjectKeyValue": "?exampleName",
       "toObjectType": "exampleName?: array<int>",
     },
   }

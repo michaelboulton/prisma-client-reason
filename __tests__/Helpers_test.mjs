@@ -42,7 +42,7 @@ Jest.describe("helpers", (function (param) {
                 }
               }
             }, (function (test) {
-                return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toObjectKey(toField(undefined, test.input, undefined, undefined, undefined, undefined, undefined, undefined))), test.expected);
+                return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toObjectKeyName(toField(undefined, test.input, undefined, undefined, undefined, undefined, undefined, undefined))), test.expected);
               }));
         Jest.testAll("annotation", {
               hd: {
@@ -82,7 +82,7 @@ Jest.describe("argument printers without relations", (function (param) {
               input: toField(undefined, undefined, false, false, undefined, undefined, undefined, undefined),
               namedArgument: "~exampleName=?",
               toNamedArgumentType: "~exampleName: array<int>=?",
-              toObjectKeyValue: "exampleName?",
+              toObjectKeyValue: "?exampleName",
               toObjectType: "exampleName?: int"
             },
             tl: {
@@ -90,7 +90,7 @@ Jest.describe("argument printers without relations", (function (param) {
                 input: toField(undefined, undefined, false, true, undefined, undefined, undefined, undefined),
                 namedArgument: "~exampleName=?",
                 toNamedArgumentType: "~exampleName: int=?",
-                toObjectKeyValue: "exampleName?",
+                toObjectKeyValue: "?exampleName",
                 toObjectType: "exampleName?: array<int>"
               },
               tl: /* [] */0

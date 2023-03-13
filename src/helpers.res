@@ -129,13 +129,13 @@ let toPrimitiveType = (field: Prisma.field) => {
 /**
 Convert to a field name for use in reason
 */
-let toObjectKey = (field: Prisma.field) => Lodash.camelCase(field.name)
+let toObjectKeyName = (field: Prisma.field) => Lodash.camelCase(field.name)
 
 /**
 Returns annotation if required
 */
 let annotation = (field: Prisma.field) =>
-  if toObjectKey(field) != field.name {
+  if toObjectKeyName(field) != field.name {
     Some(`@as("${field.name}")`)
   } else {
     None
@@ -148,22 +148,26 @@ Returns the type of the field in the object
 */
 @genType
 let toObjectType: Prisma.field => string = field => {
-  let key = toObjectKey(field)
-  let key = annotation(field)->Belt.Option.mapWithDefault(key, a => `${a} ${key}`)
+  let keyName = toObjectKeyName(field)
 
-  // let key = annotation(field);
+  let key = switch (field.isRequired, annotation(field)) {
+  | (false, Some(a)) => `${a} ${keyName}?`
+  | (true, Some(a)) => `${a} ${keyName}`
+  | (false, None) => `${keyName}?`
+  | (true, None) => `${keyName}`
+  }
 
   let type_ = toPrimitiveType(field)
 
   let recordType = switch (field.type_, field.isList, field.relationName, field.isRequired) {
   // Non-required list => optional array
-  | (_, true, None, false) => `option<array<${type_}>>`
+  | (_, true, None, false) => `array<${type_}>`
   // required list => array
   | (_, true, None, true) => `array<${type_}>`
-  // non-required non-list => optional type
-  | (_, false, None, true) => `option<${type_}>`
-  // required non-list => raw type
+  // non-required non-list => optional type is taken care of in the key
   | (_, false, None, false) => `${type_}`
+  // required non-list => raw type
+  | (_, false, None, true) => `${type_}`
   | _ => raise(Todo)
   }
 
@@ -176,8 +180,8 @@ The assignment in the actual construction of the record type
 @genType
 let toObjectKeyValue: Prisma.field => string = field =>
   switch (field.isList, field.relationName, field.isRequired) {
-  | (_, _, true) => `${toObjectKey(field)}: ${toObjectKey(field)}`
-  | (_, _, false) => `?${toObjectKey(field)}`
+  | (_, _, true) => `${toObjectKeyName(field)}: ${toObjectKeyName(field)}`
+  | (_, _, false) => `?${toObjectKeyName(field)}`
   }
 
 /**
@@ -192,11 +196,11 @@ let toNamedArgument: Prisma.field => string = field => {
   | (_, _, false)
   | // If it's a list but has no relation, also can just be introspected
   (true, None, _) =>
-    `~${toObjectKey(field)}=?`
+    `~${toObjectKeyName(field)}=?`
   // If it's not a list, use the type from toPrimitiveType which takes relations into account
-  | (false, _, _) => `~${toObjectKey(field)}: ${type_}`
+  | (false, _, _) => `~${toObjectKeyName(field)}: ${type_}`
   // If it's a list and has a relation, it should be an array
-  | (true, Some(_), _) => `~${toObjectKey(field)}: array<${type_}>`
+  | (true, Some(_), _) => `~${toObjectKeyName(field)}: array<${type_}>`
   }
 }
 
@@ -207,7 +211,7 @@ The argument in the interface of the make function
 let toNamedArgumentType: Prisma.field => string = field => {
   let type_ = toPrimitiveType(field)
 
-  `~${toObjectKey(field)}: ` ++
+  `~${toObjectKeyName(field)}: ` ++
   switch (field.type_, field.isList, field.relationName, field.isRequired) {
   // list, no relation, is required => array
   | (_, true, None, true) => `array<${type_}>`
