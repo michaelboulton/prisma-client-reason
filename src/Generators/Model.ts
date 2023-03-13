@@ -5,7 +5,7 @@ import {
   toNamedArgument,
   toNamedArgumentType,
   toObjectKeyValue,
-} from '../helpers';
+} from '../helpers.gen';
 import InputsGenerator from './Inputs';
 
 class ModelsGenerator {

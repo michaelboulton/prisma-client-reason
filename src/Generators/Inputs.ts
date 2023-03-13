@@ -5,7 +5,7 @@ import {
   toNamedArgument,
   toNamedArgumentType,
   toObjectKeyValue,
-} from '../helpers';
+} from '../helpers.gen';
 
 class InputsGenerator {
   private model: DMMF.Model;
@@ -364,7 +364,7 @@ class InputsGenerator {
         type t = {
           ${model.fields.map(toObjectType).join(',\n')}
         };
-    
+
         let make: (
           ${model.fields.map(toNamedArgumentType).join(',\n')},
           unit
@@ -374,7 +374,7 @@ class InputsGenerator {
         type t = {
           ${model.fields.map(toObjectType).join(',\n')}
         };
-    
+
         let make = (
           ${model.fields.map(toNamedArgument).join(',\n')},
           (),
@@ -415,7 +415,7 @@ class InputsGenerator {
         type t = {
           ${model.fields.map(toObjectType).join(',\n')}
         };
-    
+
         let make: (
           ${model.fields.map(toNamedArgumentType).join(',\n')},
           unit
@@ -425,7 +425,7 @@ class InputsGenerator {
         type t = {
           ${model.fields.map(toObjectType).join(',\n')}
         };
-    
+
         let make = (
           ${model.fields.map(toNamedArgument).join(',\n')},
           (),
@@ -489,11 +489,11 @@ class InputsGenerator {
         type t = {
           ${model.fields.map(toObjectType).join(',\n')},
         };
-        
+
         type connectOne = {
-          connect?: t 
+          connect?: t
         }
-        
+
         type connectMany = {
           connect?: array<t>
         }
@@ -509,13 +509,13 @@ class InputsGenerator {
         };
 
         type connectOne = {
-          connect?: t 
+          connect?: t
         }
-        
+
         type connectMany = {
           connect?: array<t>
         }
-        
+
         let make = (
           ${model.fields.map(toNamedArgument).join(',\n')},
           (),

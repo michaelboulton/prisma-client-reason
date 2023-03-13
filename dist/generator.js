@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -36,15 +35,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-exports.__esModule = true;
-var path_1 = require("path");
-var fs_extra_1 = require("fs-extra");
-var generator_helper_1 = require("@prisma/generator-helper");
-var Externals_1 = require("./Externals");
-var Model_1 = require("./Generators/Model");
-var Enum_1 = require("./Generators/Enum");
+import { join } from 'path';
+import { ensureDir, writeFile } from 'fs-extra';
+import { generatorHandler } from '@prisma/generator-helper';
+import ExternalsGenerator from './Externals';
+import ModelGenerator from './Generators/Model';
+import EnumGenerator from './Generators/Enum';
 var clientVersion = require('../package.json').version;
-(0, generator_helper_1.generatorHandler)({
+generatorHandler({
     onManifest: function () {
         return {
             prettyName: 'Prisma Client ReasonML',
@@ -65,14 +63,14 @@ var clientVersion = require('../package.json').version;
                         console.error('You need to define a name for the client');
                         throw new Error();
                     }
-                    externals = new Externals_1["default"](options.dmmf.datamodel.models);
-                    return [4, (0, fs_extra_1.ensureDir)(options.generator.output.value)];
+                    externals = new ExternalsGenerator(options.dmmf.datamodel.models);
+                    return [4, ensureDir(options.generator.output.value)];
                 case 1:
                     _a.sent();
-                    return [4, (0, fs_extra_1.writeFile)((0, path_1.join)(options.generator.output.value, "".concat(options.generator.config.name, ".res")), "\n        type prismaClient;\n        \n        type batchPayload = {\n          // https://rescript-lang.org/docs/manual/latest/shared-data-types\n          count: float,\n        }\n\n        /* ENUMS */\n        ".concat(options.dmmf.schema.enumTypes.prisma
-                            .map(function (type) { return new Enum_1["default"](type).generate(); })
+                    return [4, writeFile(join(options.generator.output.value, "".concat(options.generator.config.name, ".res")), "\n        type prismaClient;\n        \n        type batchPayload = {\n          // https://rescript-lang.org/docs/manual/latest/shared-data-types\n          count: float,\n        }\n\n        /* ENUMS */\n        ".concat(options.dmmf.schema.enumTypes.prisma
+                            .map(function (type) { return new EnumGenerator(type).generate(); })
                             .join('\n\n'), "\n        \n        module rec ").concat(options.dmmf.datamodel.models
-                            .map(function (model) { return new Model_1["default"](model).generate(); })
+                            .map(function (model) { return new ModelGenerator(model).generate(); })
                             .join('\n and \n'), "\n\n        ").concat(externals.generate(), "\n\n        let make = Externals.make;\n        let connect = Externals.connect;\n        let disconnect = Externals.disconnect;\n      "))];
                 case 2:
                     _a.sent();

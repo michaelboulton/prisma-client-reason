@@ -62,6 +62,7 @@ exception UnknownType({message: string})
 /**
 Gets the basic type a field should be based on the prisma type and whether it has relations
 */
+@genType
 let toPrimitiveType = (field: Prisma.field) => {
   switch (field.relationName, field.type_) {
   | (None, _) =>
@@ -99,6 +100,7 @@ let toPrimitiveType = (field: Prisma.field) => {
 /**
 Convert to a field name for use in reason
 */
+@genType
 let toObjectKey = (field: Prisma.field) => Lodash.camelCase(field.name)
 
 /**

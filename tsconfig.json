@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "noImplicitAny": true,
+    "module": "ES6",
+    "noImplicitAny": false,
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
     "outDir": "dist",
+    "moduleResolution": "node",
     "lib": ["esnext", "dom"],
     // "strict": true, // `strict` is commented because of this issue: https://github.com/prisma/prisma/issues/3774; all its options except `strictNullChecks` & `strictPropertyInitialization` are explicitly set below.
     "noImplicitThis": true,

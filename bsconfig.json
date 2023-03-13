@@ -20,6 +20,9 @@
       "type": "dev"
     }
   ],
+  "bsc-flags": [
+    "-bs-super-errors"
+  ],
   "package-specs": {
     "module": "es6",
     "in-source": true
@@ -30,8 +33,11 @@
     "error": "+101+8"
   },
   "gentypeconfig": {
-    "language": "untyped",
-    "shims": [],
+    "language": "typescript",
+    "exportInterfaces": true,
+    "shims": {},
+    "importPath": "relative",
+    "generatedFileExtension": ".gen.ts",
     "module": "es6",
     "debug": {
       "all": false,
