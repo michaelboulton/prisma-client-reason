@@ -4,10 +4,10 @@ import { join } from 'path';
 import { ensureDir, writeFile } from 'fs-extra';
 import { generatorHandler } from '@prisma/generator-helper';
 
-import ExternalsGenerator from './Externals';
+import ExternalsGenerator from './Externals.js';
 
-import ModelGenerator from './Generators/Model';
-import EnumGenerator from './Generators/Enum';
+import ModelGenerator from './Generators/Model.js';
+import EnumGenerator from './Generators/Enum.js';
 
 const clientVersion = require('../package.json').version;
 
@@ -39,7 +39,7 @@ generatorHandler({
       ),
       `
         type prismaClient;
-        
+
         type batchPayload = {
           // https://rescript-lang.org/docs/manual/latest/shared-data-types
           count: float,
@@ -49,7 +49,7 @@ generatorHandler({
         ${options.dmmf.schema.enumTypes.prisma
           .map((type) => new EnumGenerator(type).generate())
           .join('\n\n')}
-        
+
         module rec ${options.dmmf.datamodel.models
           .map((model) => new ModelGenerator(model).generate())
           .join('\n and \n')}

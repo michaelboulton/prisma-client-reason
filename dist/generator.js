@@ -38,9 +38,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import { join } from 'path';
 import { ensureDir, writeFile } from 'fs-extra';
 import { generatorHandler } from '@prisma/generator-helper';
-import ExternalsGenerator from './Externals';
-import ModelGenerator from './Generators/Model';
-import EnumGenerator from './Generators/Enum';
+import ExternalsGenerator from './Externals.js';
+import ModelGenerator from './Generators/Model.js';
+import EnumGenerator from './Generators/Enum.js';
 var clientVersion = require('../package.json').version;
 generatorHandler({
     onManifest: function () {
@@ -67,9 +67,9 @@ generatorHandler({
                     return [4, ensureDir(options.generator.output.value)];
                 case 1:
                     _a.sent();
-                    return [4, writeFile(join(options.generator.output.value, "".concat(options.generator.config.name, ".res")), "\n        type prismaClient;\n        \n        type batchPayload = {\n          // https://rescript-lang.org/docs/manual/latest/shared-data-types\n          count: float,\n        }\n\n        /* ENUMS */\n        ".concat(options.dmmf.schema.enumTypes.prisma
+                    return [4, writeFile(join(options.generator.output.value, "".concat(options.generator.config.name, ".res")), "\n        type prismaClient;\n\n        type batchPayload = {\n          // https://rescript-lang.org/docs/manual/latest/shared-data-types\n          count: float,\n        }\n\n        /* ENUMS */\n        ".concat(options.dmmf.schema.enumTypes.prisma
                             .map(function (type) { return new EnumGenerator(type).generate(); })
-                            .join('\n\n'), "\n        \n        module rec ").concat(options.dmmf.datamodel.models
+                            .join('\n\n'), "\n\n        module rec ").concat(options.dmmf.datamodel.models
                             .map(function (model) { return new ModelGenerator(model).generate(); })
                             .join('\n and \n'), "\n\n        ").concat(externals.generate(), "\n\n        let make = Externals.make;\n        let connect = Externals.connect;\n        let disconnect = Externals.disconnect;\n      "))];
                 case 2:

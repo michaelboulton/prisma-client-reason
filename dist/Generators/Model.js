@@ -3,8 +3,8 @@ var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cook
     return cooked;
 };
 import { codeBlock } from 'common-tags';
-import { toObjectType, } from '../helpers.gen';
-import InputsGenerator from './Inputs';
+import { toObjectType, } from '../helpers.gen.js';
+import InputsGenerator from './Inputs.js';
 var ModelsGenerator = (function () {
     function ModelsGenerator(model) {
         var _this = this;

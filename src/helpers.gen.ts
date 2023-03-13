@@ -3,7 +3,7 @@
 
 
 // @ts-ignore: Implicit any on import
-import * as helpersBS__Es6Import from './helpers.mjs';
+import * as helpersBS__Es6Import from './helpers.js';
 const helpersBS: any = helpersBS__Es6Import;
 
 // tslint:disable-next-line:interface-over-type-literal

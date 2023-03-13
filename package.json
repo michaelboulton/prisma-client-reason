@@ -17,7 +17,7 @@
     "clean:node_modules": "rm -rf node_modules",
     "clean:build": "rm -rf dist",
     "start": "nodemon",
-    "build": "rescript && tsc && chmod +x ./dist/generator.js",
+    "build": "rescript && tsc && cp src/helpers.js dist/ && chmod +x ./dist/generator.js",
     "tsc:start": "tsc -w",
     "rebuild": "run-s clean:build build",
     "res:start": "rescript build -w",

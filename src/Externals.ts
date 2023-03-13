@@ -88,25 +88,25 @@ class ExternalsGenerator {
 
   private update = (model: DMMF.Model) => {
     return codeBlock`
-      
+
     `;
   };
 
   private updateMany = (model: DMMF.Model) => {
     return codeBlock`
-      
+
     `;
   };
 
   private upsert = (model: DMMF.Model) => {
     return codeBlock`
-      
+
     `;
   };
 
   private delete = (model: DMMF.Model) => {
     return codeBlock`
-      
+
     `;
   };
 
@@ -127,7 +127,7 @@ class ExternalsGenerator {
 
   private count = (model: DMMF.Model) => {
     return codeBlock`
-      
+
     `;
   };
 

@@ -5,8 +5,8 @@ import {
   toNamedArgument,
   toNamedArgumentType,
   toObjectKeyValue,
-} from '../helpers.gen';
-import InputsGenerator from './Inputs';
+} from '../helpers.gen.js';
+import InputsGenerator from './Inputs.js';
 
 class ModelsGenerator {
   private model: DMMF.Model;

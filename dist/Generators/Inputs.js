@@ -14,7 +14,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 import { codeBlock } from 'common-tags';
-import { toObjectType, toNamedArgument, toNamedArgumentType, toObjectKeyValue, } from '../helpers.gen';
+import { toObjectType, toNamedArgument, toNamedArgumentType, toObjectKeyValue, } from '../helpers.gen.js';
 var InputsGenerator = (function () {
     function InputsGenerator(model) {
         var _this = this;
