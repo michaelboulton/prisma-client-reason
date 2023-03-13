@@ -159,6 +159,10 @@ let toObjectType: Prisma.field => string = field => {
 
   let type_ = toPrimitiveType(field)
 
+  let force_relation = () => {
+    relatedTo(field)->Belt.Result.getExn
+  }
+
   let recordType = switch (field.type_, field.isList, field.relationName, field.isRequired) {
   // Non-required list => optional array
   | (_, true, None, false) => `array<${type_}>`
@@ -168,6 +172,17 @@ let toObjectType: Prisma.field => string = field => {
   | (_, false, None, false) => `${type_}`
   // required non-list => raw type
   | (_, false, None, true) => `${type_}`
+  /* *************** */
+  // A not required relation implies, or a 'FindMany', implies a 'select' field.
+  // Note these two cases come from different contexts.
+  | ("FindMany", _, Some(_), _)
+  | (_, _, Some(_), false) =>
+    `option<${type_}>`
+  // List relation which is required implies a many-to-many link
+  | (_, true, Some(_), _) => `${force_relation()[1]}.WhereUniqueInput.connectMany`
+  // Non-list relation which is required implies a 'unique' selection on the relation
+  | (_, false, Some(_), _) => `${force_relation()[2]}.WhereUniqueInput.connectOne`
+  /* *************** */
   | _ => raise(Todo)
   }
 

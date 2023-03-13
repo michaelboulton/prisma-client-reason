@@ -116,18 +116,24 @@ Jest.describe("argument printers without relations", (function (param) {
       }));
 
 Jest.describe("argument printers with relations", (function (param) {
-        var testExamples = $$Array.to_list([
-              {
-                input: toField(undefined, "Cool", false, true, undefined, "One", "CoolToOne", undefined),
-                type: "~cool=?"
-              },
-              {
-                input: toField(undefined, "Cool", true, true, undefined, "One", "CoolToOne", undefined),
-                type: "~cool: array<One.WhereUniqueInput.t>"
-              }
-            ]);
+        var testExamples = $$Array.to_list([{
+                input: toField(undefined, "Cool", true, false, undefined, "One", "CoolToOne", undefined),
+                namedArgument: "~cool: One.WhereUniqueInput.t",
+                toNamedArgumentType: "~cool: One.WhereUniqueInput.t=?",
+                toObjectKeyValue: "cool: cool",
+                toObjectType: "@as(\"Cool\") cool: One.WhereUniqueInput.t"
+              }]);
         Jest.testAll("named argument", testExamples, (function (test) {
-                return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toNamedArgument(test.input)), test.type);
+                return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toNamedArgument(test.input)), test.namedArgument);
+              }));
+        Jest.testAll("named argument type", testExamples, (function (test) {
+                return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toNamedArgumentType(test.input)), test.toNamedArgumentType);
+              }));
+        Jest.testAll("object key value", testExamples, (function (test) {
+                return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toObjectKeyValue(test.input)), test.toObjectKeyValue);
+              }));
+        Jest.testAll("object type", testExamples, (function (test) {
+                return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toObjectType(test.input)), test.toObjectType);
               }));
       }));
 

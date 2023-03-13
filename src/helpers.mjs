@@ -148,26 +148,29 @@ function toObjectType(field) {
       match$1 !== undefined ? "" + match$1 + " " + keyName + "?" : "" + keyName + "?"
     );
   var type_ = toPrimitiveType(field);
-  var match$2 = field.isList;
-  var match$3 = field.relationName;
-  var match$4 = field.isRequired;
+  var match$2 = field.type;
+  var match$3 = field.isList;
+  var match$4 = field.relationName;
+  var match$5 = field.isRequired;
   var recordType;
-  if (match$2) {
-    if (match$3 !== undefined) {
-      throw {
-            RE_EXN_ID: Todo,
-            Error: new Error()
-          };
+  var exit = 0;
+  if (match$3) {
+    if (match$4 !== undefined) {
+      exit = 1;
+    } else {
+      recordType = match$5 ? "array<" + type_ + ">" : "array<" + type_ + ">";
     }
-    recordType = match$4 ? "array<" + type_ + ">" : "array<" + type_ + ">";
+  } else if (match$4 !== undefined) {
+    exit = 1;
   } else {
-    if (match$3 !== undefined) {
-      throw {
-            RE_EXN_ID: Todo,
-            Error: new Error()
-          };
-    }
-    recordType = match$4 ? "" + type_ + "" : "" + type_ + "";
+    recordType = match$5 ? "" + type_ + "" : "" + type_ + "";
+  }
+  if (exit === 1) {
+    recordType = match$5 ? (
+        match$2 === "FindMany" ? "option<" + type_ + ">" : (
+            match$3 ? "" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1) + ".WhereUniqueInput.connectMany" : "" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 2) + ".WhereUniqueInput.connectOne"
+          )
+      ) : "option<" + type_ + ">";
   }
   return "" + key + ": " + recordType + "";
 }

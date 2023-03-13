@@ -110,33 +110,35 @@ describe("argument printers without relations", () => {
 describe("argument printers with relations", () => {
   let testExamples = Array.to_list([
     {
-      // Relation but not required => optional still
+      // Relation and required, one to one
       "input": toField(
-        ~isList=true,
-        ~isRequired=false,
-        ~name="Cool",
-        ~type_="One",
-        ~relationName="CoolToOne",
-        (),
-      ),
-      "type": "~cool=?",
-    },
-    {
-      // Relation and required => array
-      // FIXME this logic is a bit wrong
-      "input": toField(
-        ~isList=true,
+        ~isList=false,
         ~isRequired=true,
         ~name="Cool",
         ~type_="One",
         ~relationName="CoolToOne",
         (),
       ),
-      "type": "~cool: array<One.WhereUniqueInput.t>",
+      "namedArgument": "~cool: One.WhereUniqueInput.t",
+      "toNamedArgumentType": "~cool: One.WhereUniqueInput.t=?",
+      "toObjectKeyValue": "cool: cool",
+      "toObjectType": `@as("Cool") cool: One.WhereUniqueInput.t`,
     },
   ])
 
   testAll("named argument", testExamples, test => {
-    test["input"]->Helpers.toNamedArgument->expect->toBe(test["type"])
+    test["input"]->Helpers.toNamedArgument->expect->toBe(test["namedArgument"])
+  })
+
+  testAll("named argument type", testExamples, test => {
+    test["input"]->Helpers.toNamedArgumentType->expect->toBe(test["toNamedArgumentType"])
+  })
+
+  testAll("object key value", testExamples, test => {
+    test["input"]->Helpers.toObjectKeyValue->expect->toBe(test["toObjectKeyValue"])
+  })
+
+  testAll("object type", testExamples, test => {
+    test["input"]->Helpers.toObjectType->expect->toBe(test["toObjectType"])
   })
 })
