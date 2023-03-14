@@ -166,10 +166,10 @@ function toObjectType(field) {
   }
   if (exit === 1) {
     recordType = match$5 ? (
-        match$2 === "FindMany" ? "option<" + type_ + ">" : (
-            match$3 ? "array<" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1) + ".WhereUniqueInput.t>" : "" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 2) + ".WhereUniqueInput.t"
+        match$2 === "FindMany" ? "" + type_ + "" : (
+            match$3 ? "array<" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 2) + ".WhereUniqueInput.t>" : "" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1) + ".WhereUniqueInput.t"
           )
-      ) : "option<" + type_ + ">";
+      ) : "" + type_ + "";
   }
   return "" + key + ": " + recordType + "";
 }
@@ -183,51 +183,70 @@ function toObjectKeyValue(field) {
   }
 }
 
-function toNamedArgument(field) {
-  var type_ = toPrimitiveType(field);
-  var match = field.isList;
-  var match$1 = field.relationName;
-  var match$2 = field.isRequired;
-  if (match$2) {
-    if (match) {
-      if (match$1 !== undefined) {
-        return "~" + Lodash.camelCase(field.name) + ": array<" + type_ + ">";
-      } else {
-        return "~" + Lodash.camelCase(field.name) + "=?";
-      }
-    } else {
-      return "~" + Lodash.camelCase(field.name) + ": " + type_ + "";
-    }
-  } else {
-    return "~" + Lodash.camelCase(field.name) + "=?";
-  }
-}
-
-function toNamedArgumentType(field) {
+function toNamedArgumentImpl(field) {
   var type_ = toPrimitiveType(field);
   var match = field.type;
   var match$1 = field.isList;
   var match$2 = field.relationName;
   var match$3 = field.isRequired;
-  var tmp;
   var exit = 0;
-  if (match$1) {
+  if (match === "Boolean" && match$1) {
     if (match$2 !== undefined) {
-      exit = 1;
-    } else {
-      tmp = match$3 ? "array<" + type_ + ">" : "" + type_ + "=?";
+      if (match$3) {
+        return {
+                arg: "bool=?",
+                type_: "bool=?"
+              };
+      }
+      exit = 2;
     }
-  } else if (match$2 !== undefined) {
-    exit = 1;
+    
   } else {
-    tmp = match$3 ? "" + type_ + "" : "array<" + type_ + ">=?";
+    exit = 2;
   }
-  if (exit === 1) {
-    tmp = match === "Boolean" ? "bool" : (
-        match$3 ? "" + type_ + "=?" : "" + type_ + "=?"
-      );
+  if (exit === 2 && match$2 !== undefined) {
+    if (match$3) {
+      throw {
+            RE_EXN_ID: Todo,
+            Error: new Error()
+          };
+    }
+    return {
+            arg: "=?",
+            type_: "" + type_ + "=?"
+          };
   }
-  return "~" + Lodash.camelCase(field.name) + ": " + tmp;
+  if (match$1) {
+    if (match$3) {
+      return {
+              arg: ": array<" + type_ + ">",
+              type_: "array<" + type_ + ">"
+            };
+    } else {
+      return {
+              arg: "=?",
+              type_: "array<" + type_ + ">=?"
+            };
+    }
+  } else if (match$3) {
+    return {
+            arg: ": " + type_ + "",
+            type_: "" + type_ + ""
+          };
+  } else {
+    return {
+            arg: "=?",
+            type_: "" + type_ + "=?"
+          };
+  }
+}
+
+function toNamedArgument(field) {
+  return "~" + Lodash.camelCase(field.name) + "" + toNamedArgumentImpl(field).arg + "";
+}
+
+function toNamedArgumentType(field) {
+  return "~" + Lodash.camelCase(field.name) + ": " + toNamedArgumentImpl(field).type_ + "";
 }
 
 export {
@@ -242,6 +261,7 @@ export {
   Todo ,
   toObjectType ,
   toObjectKeyValue ,
+  toNamedArgumentImpl ,
   toNamedArgument ,
   toNamedArgumentType ,
 }

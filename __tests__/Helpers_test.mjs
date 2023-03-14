@@ -72,7 +72,7 @@ Jest.describe("argument printers without relations", (function (param) {
         var testExamples_1 = {
           hd: {
             input: toField(undefined, undefined, true, true, undefined, undefined, undefined, undefined),
-            namedArgument: "~exampleName=?",
+            namedArgument: "~exampleName: array<int>",
             toNamedArgumentType: "~exampleName: array<int>",
             toObjectKeyValue: "exampleName: exampleName",
             toObjectType: "exampleName: array<int>"
@@ -81,7 +81,7 @@ Jest.describe("argument printers without relations", (function (param) {
             hd: {
               input: toField(undefined, undefined, false, false, undefined, undefined, undefined, undefined),
               namedArgument: "~exampleName=?",
-              toNamedArgumentType: "~exampleName: array<int>=?",
+              toNamedArgumentType: "~exampleName: int=?",
               toObjectKeyValue: "?exampleName",
               toObjectType: "exampleName?: int"
             },
@@ -89,11 +89,29 @@ Jest.describe("argument printers without relations", (function (param) {
               hd: {
                 input: toField(undefined, undefined, false, true, undefined, undefined, undefined, undefined),
                 namedArgument: "~exampleName=?",
-                toNamedArgumentType: "~exampleName: int=?",
+                toNamedArgumentType: "~exampleName: array<int>=?",
                 toObjectKeyValue: "?exampleName",
                 toObjectType: "exampleName?: array<int>"
               },
-              tl: /* [] */0
+              tl: {
+                hd: {
+                  input: toField(undefined, undefined, false, false, undefined, "Boolean", undefined, undefined),
+                  namedArgument: "~exampleName=?",
+                  toNamedArgumentType: "~exampleName: bool=?",
+                  toObjectKeyValue: "?exampleName",
+                  toObjectType: "exampleName?: bool"
+                },
+                tl: {
+                  hd: {
+                    input: toField(undefined, undefined, false, true, undefined, "Boolean", undefined, undefined),
+                    namedArgument: "~exampleName=?",
+                    toNamedArgumentType: "~exampleName: array<bool>=?",
+                    toObjectKeyValue: "?exampleName",
+                    toObjectType: "exampleName?: array<bool>"
+                  },
+                  tl: /* [] */0
+                }
+              }
             }
           }
         };
@@ -101,16 +119,16 @@ Jest.describe("argument printers without relations", (function (param) {
           hd: testExamples_0,
           tl: testExamples_1
         };
-        Jest.testAll("named argument", testExamples, (function (test) {
+        Jest.testAllJson("named argument", testExamples, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toNamedArgument(test.input)), test.namedArgument);
               }));
-        Jest.testAll("named argument type", testExamples, (function (test) {
+        Jest.testAllJson("named argument type", testExamples, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toNamedArgumentType(test.input)), test.toNamedArgumentType);
               }));
-        Jest.testAll("object key value", testExamples, (function (test) {
+        Jest.testAllJson("object key value", testExamples, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toObjectKeyValue(test.input)), test.toObjectKeyValue);
               }));
-        Jest.testAll("object type", testExamples, (function (test) {
+        Jest.testAllJson("object type", testExamples, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toObjectType(test.input)), test.toObjectType);
               }));
       }));
@@ -123,16 +141,16 @@ Jest.describe("argument printers with relations", (function (param) {
                 toObjectKeyValue: "cool: cool",
                 toObjectType: "@as(\"Cool\") cool: One.WhereUniqueInput.t"
               }]);
-        Jest.testAll("named argument", testExamples, (function (test) {
+        Jest.testAllJson("named argument", testExamples, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toNamedArgument(test.input)), test.namedArgument);
               }));
-        Jest.testAll("named argument type", testExamples, (function (test) {
+        Jest.testAllJson("named argument type", testExamples, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toNamedArgumentType(test.input)), test.toNamedArgumentType);
               }));
-        Jest.testAll("object key value", testExamples, (function (test) {
+        Jest.testAllJson("object key value", testExamples, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toObjectKeyValue(test.input)), test.toObjectKeyValue);
               }));
-        Jest.testAll("object type", testExamples, (function (test) {
+        Jest.testAllJson("object type", testExamples, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toObjectType(test.input)), test.toObjectType);
               }));
       }));

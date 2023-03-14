@@ -67,7 +67,7 @@ describe("argument printers without relations", () => {
     {
       // Required list => array type
       "input": toField(~isList=true, ~isRequired=true, ()),
-      "namedArgument": "~exampleName=?",
+      "namedArgument": "~exampleName: array<int>",
       "toNamedArgumentType": "~exampleName: array<int>",
       "toObjectKeyValue": "exampleName: exampleName",
       "toObjectType": "exampleName: array<int>",
@@ -76,7 +76,7 @@ describe("argument printers without relations", () => {
       // Not required => implicit type
       "input": toField(~isList=false, ~isRequired=false, ()),
       "namedArgument": "~exampleName=?",
-      "toNamedArgumentType": "~exampleName: array<int>=?",
+      "toNamedArgumentType": "~exampleName: int=?",
       "toObjectKeyValue": "?exampleName",
       "toObjectType": "exampleName?: int",
     },
@@ -84,25 +84,41 @@ describe("argument printers without relations", () => {
       // Required list => array type
       "input": toField(~isList=true, ~isRequired=false, ()),
       "namedArgument": "~exampleName=?",
-      "toNamedArgumentType": "~exampleName: int=?",
+      "toNamedArgumentType": "~exampleName: array<int>=?",
       "toObjectKeyValue": "?exampleName",
       "toObjectType": "exampleName?: array<int>",
     },
+    {
+      // not required bool
+      "input": toField(~isList=false, ~isRequired=false, ~type_="Boolean", ()),
+      "namedArgument": "~exampleName=?",
+      "toNamedArgumentType": "~exampleName: bool=?",
+      "toObjectKeyValue": "?exampleName",
+      "toObjectType": "exampleName?: bool",
+    },
+    {
+      // not required bool list
+      "input": toField(~isList=true, ~isRequired=false, ~type_="Boolean", ()),
+      "namedArgument": "~exampleName=?",
+      "toNamedArgumentType": "~exampleName: array<bool>=?",
+      "toObjectKeyValue": "?exampleName",
+      "toObjectType": "exampleName?: array<bool>",
+    },
   }
 
-  testAll("named argument", testExamples, test => {
+  testAllJson("named argument", testExamples, test => {
     test["input"]->Helpers.toNamedArgument->expect->toBe(test["namedArgument"])
   })
 
-  testAll("named argument type", testExamples, test => {
+  testAllJson("named argument type", testExamples, test => {
     test["input"]->Helpers.toNamedArgumentType->expect->toBe(test["toNamedArgumentType"])
   })
 
-  testAll("object key value", testExamples, test => {
+  testAllJson("object key value", testExamples, test => {
     test["input"]->Helpers.toObjectKeyValue->expect->toBe(test["toObjectKeyValue"])
   })
 
-  testAll("object type", testExamples, test => {
+  testAllJson("object type", testExamples, test => {
     test["input"]->Helpers.toObjectType->expect->toBe(test["toObjectType"])
   })
 })
@@ -126,19 +142,19 @@ describe("argument printers with relations", () => {
     },
   ])
 
-  testAll("named argument", testExamples, test => {
+  testAllJson("named argument", testExamples, test => {
     test["input"]->Helpers.toNamedArgument->expect->toBe(test["namedArgument"])
   })
 
-  testAll("named argument type", testExamples, test => {
+  testAllJson("named argument type", testExamples, test => {
     test["input"]->Helpers.toNamedArgumentType->expect->toBe(test["toNamedArgumentType"])
   })
 
-  testAll("object key value", testExamples, test => {
+  testAllJson("object key value", testExamples, test => {
     test["input"]->Helpers.toObjectKeyValue->expect->toBe(test["toObjectKeyValue"])
   })
 
-  testAll("object type", testExamples, test => {
+  testAllJson("object type", testExamples, test => {
     test["input"]->Helpers.toObjectType->expect->toBe(test["toObjectType"])
   })
 })
