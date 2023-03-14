@@ -10,7 +10,8 @@ import ExternalsGenerator from './Externals.js';
 import ModelGenerator from './Generators/Model.js';
 import EnumGenerator from './Generators/Enum.js';
 
-import * as p from "../package.json"
+// @ts-ignore
+import * as p from "../package.json" assert { type: "json" };
 // @ts-ignore
 const clientVersion = p.version
 
