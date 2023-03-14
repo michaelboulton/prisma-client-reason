@@ -74,16 +74,13 @@ Gets the basic type a field should be based on the prisma type and whether it ha
 */
 let toPrimitiveType = (field: Prisma.field) => {
   switch (field.relationName, field.type_) {
-  | (None, _) =>
-    // No relation - basic type
-    switch field.type_ {
-    | "Int" => "int"
-    | "Float" => "float"
-    | "String" => "string"
-    | "Boolean" => "bool"
-    | "DateTime" => "string"
-    | _ => raise(BadPrimitiveType({message: `No relation but found unknown type: ${field.type_}`}))
-    }
+  // basic type
+  | (_, "Int") => "int"
+  | (_, "Float") => "float"
+  | (_, "String") => "string"
+  | (_, "Boolean") => "bool"
+  | (_, "DateTime") => "string"
+  | (None, _) => raise(BadPrimitiveType({message: `No relation but found unknown type: ${field.type_}`}))
   | (Some(relationName), "FindMany") => {
       // FindMany relation - uses the special 'find' types generated for this purpose
       let findManyRe = %re("/([A-Z][a-z]+)/")
@@ -179,9 +176,9 @@ let toObjectType: Prisma.field => string = field => {
   | (_, _, Some(_), false) =>
     `option<${type_}>`
   // List relation which is required implies a many-to-many link
-  | (_, true, Some(_), _) => `${force_relation()[1]}.WhereUniqueInput.connectMany`
+  | (_, true, Some(_), _) => `array<${force_relation()[1]}.WhereUniqueInput.t>`
   // Non-list relation which is required implies a 'unique' selection on the relation
-  | (_, false, Some(_), _) => `${force_relation()[2]}.WhereUniqueInput.connectOne`
+  | (_, false, Some(_), _) => `${force_relation()[2]}.WhereUniqueInput.t`
   /* *************** */
   | _ => raise(Todo)
   }

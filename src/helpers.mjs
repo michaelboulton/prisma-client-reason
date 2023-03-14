@@ -61,52 +61,7 @@ var BadPrimitiveType = /* @__PURE__ */Caml_exceptions.create("Helpers.BadPrimiti
 function toPrimitiveType(field) {
   var match = field.relationName;
   var match$1 = field.type;
-  if (match !== undefined) {
-    if (match$1 === "FindMany") {
-      var findManyRe = /([A-Z][a-z]+)/;
-      var item = findManyRe.exec(match);
-      var found;
-      if (item !== null) {
-        found = item;
-      } else {
-        throw {
-              RE_EXN_ID: BadPrimitiveType,
-              message: "Could not determine relation name: " + field.type + "",
-              Error: new Error()
-            };
-      }
-      var item$1 = Caml_array.get(found, 0);
-      var findName;
-      if (item$1 == null) {
-        throw {
-              RE_EXN_ID: BadPrimitiveType,
-              message: "Regex matched but returned undefined: " + field.type + "",
-              Error: new Error()
-            };
-      }
-      findName = item$1;
-      return "Externals." + findName + "." + field.type + ".t";
-    }
-    var item$2 = relatedTo(field);
-    var matches;
-    if (item$2.TAG === /* Ok */0) {
-      matches = item$2._0;
-    } else {
-      throw {
-            RE_EXN_ID: BadPrimitiveType,
-            message: "Could not find relation (expected to be in the format 'FieldToOtherField'): " + field.type + ": " + item$2._0 + "",
-            Error: new Error()
-          };
-    }
-    var r = Caml_array.get(matches, 1);
-    if (r === field.type) {
-      return "" + r + ".WhereUniqueInput.t";
-    } else {
-      return "" + field.type + ".WhereUniqueInput.t";
-    }
-  }
-  var match$2 = field.type;
-  switch (match$2) {
+  switch (match$1) {
     case "Boolean" :
         return "bool";
     case "Float" :
@@ -117,6 +72,50 @@ function toPrimitiveType(field) {
     case "String" :
         return "string";
     default:
+      if (match !== undefined) {
+        if (match$1 === "FindMany") {
+          var findManyRe = /([A-Z][a-z]+)/;
+          var item = findManyRe.exec(match);
+          var found;
+          if (item !== null) {
+            found = item;
+          } else {
+            throw {
+                  RE_EXN_ID: BadPrimitiveType,
+                  message: "Could not determine relation name: " + field.type + "",
+                  Error: new Error()
+                };
+          }
+          var item$1 = Caml_array.get(found, 0);
+          var findName;
+          if (item$1 == null) {
+            throw {
+                  RE_EXN_ID: BadPrimitiveType,
+                  message: "Regex matched but returned undefined: " + field.type + "",
+                  Error: new Error()
+                };
+          }
+          findName = item$1;
+          return "Externals." + findName + "." + field.type + ".t";
+        }
+        var item$2 = relatedTo(field);
+        var matches;
+        if (item$2.TAG === /* Ok */0) {
+          matches = item$2._0;
+        } else {
+          throw {
+                RE_EXN_ID: BadPrimitiveType,
+                message: "Could not find relation (expected to be in the format 'FieldToOtherField'): " + field.type + ": " + item$2._0 + "",
+                Error: new Error()
+              };
+        }
+        var r = Caml_array.get(matches, 1);
+        if (r === field.type) {
+          return "" + r + ".WhereUniqueInput.t";
+        } else {
+          return "" + field.type + ".WhereUniqueInput.t";
+        }
+      }
       throw {
             RE_EXN_ID: BadPrimitiveType,
             message: "No relation but found unknown type: " + field.type + "",
@@ -168,7 +167,7 @@ function toObjectType(field) {
   if (exit === 1) {
     recordType = match$5 ? (
         match$2 === "FindMany" ? "option<" + type_ + ">" : (
-            match$3 ? "" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1) + ".WhereUniqueInput.connectMany" : "" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 2) + ".WhereUniqueInput.connectOne"
+            match$3 ? "array<" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1) + ".WhereUniqueInput.t>" : "" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 2) + ".WhereUniqueInput.t"
           )
       ) : "option<" + type_ + ">";
   }
