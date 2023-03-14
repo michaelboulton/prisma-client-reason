@@ -143,26 +143,28 @@ let annotation = (field: Prisma.field) =>
     None
   }
 
-/**
-The assignment in the actual construction of the record type
-*/
-@genType
-let toObjectKeyValue: Prisma.field => string = field =>
-  switch (field.isList, field.relationName, field.isRequired) {
-  | (_, _, true) => `${toObjectKeyName(field)}: ${toObjectKeyName(field)}`
-  | (_, _, false) => `?${toObjectKeyName(field)}`
-  }
-
 type namedArgumentArgs = {
   namedArgument: string,
   namedArgumentType: string,
   objectType: string,
   objectKey: string,
+  objectKeyValue: string,
 }
 
 let toNamedArgumentImpl: Prisma.field => namedArgumentArgs = field => {
+  // Even if it's marked as required, if it is a relation, it actually isn't!
+  let isRequired = switch (field.relationName, field.isRequired) {
+  | (Some(_), _) => false
+  | (None, r) => r
+  }
+
+  let objectKeyValue = switch isRequired {
+  | true => `${toObjectKeyName(field)}: ${toObjectKeyName(field)}`
+  | false => `?${toObjectKeyName(field)}`
+  }
+
   let keyName = toObjectKeyName(field)
-  let objectKey = switch (field.isRequired, annotation(field)) {
+  let objectKey = switch (isRequired, annotation(field)) {
   | (false, Some(a)) => `${a} ${keyName}?`
   | (true, Some(a)) => `${a} ${keyName}`
   | (false, None) => `${keyName}?`
@@ -171,13 +173,14 @@ let toNamedArgumentImpl: Prisma.field => namedArgumentArgs = field => {
 
   let type_ = toPrimitiveType(field)
 
-  switch (field.type_, field.isList, field.relationName, field.isRequired) {
+  switch (field.type_, field.isList, field.relationName, isRequired) {
   // If it has a relation and its a boolean type, it's a "select" field, so it's just a bool
   | ("Boolean", true, Some(_), true) => {
       namedArgument: "bool=?",
       namedArgumentType: "bool=?",
       objectType: "bool",
       objectKey,
+      objectKeyValue,
     }
   // Non-required relation field => Optional
   | ("FindMany", _, Some(_), false)
@@ -186,6 +189,7 @@ let toNamedArgumentImpl: Prisma.field => namedArgumentArgs = field => {
       namedArgumentType: `${type_}=?`,
       objectType: `${type_}`,
       objectKey,
+      objectKeyValue,
     }
   // whether its a list or not, if it has no relation, not required => optional
   | (_, true, None, false) => {
@@ -193,12 +197,14 @@ let toNamedArgumentImpl: Prisma.field => namedArgumentArgs = field => {
       namedArgumentType: `array<${type_}>=?`,
       objectType: `array<${type_}>`,
       objectKey,
+      objectKeyValue,
     }
   | (_, false, None, false) => {
       namedArgument: `=?`,
       namedArgumentType: `${type_}=?`,
       objectType: `${type_}`,
       objectKey,
+      objectKeyValue,
     }
   // list, no relation, is required => array
   | (_, true, None, true) => {
@@ -206,6 +212,7 @@ let toNamedArgumentImpl: Prisma.field => namedArgumentArgs = field => {
       namedArgumentType: `array<${type_}>`,
       objectType: `array<${type_}>`,
       objectKey,
+      objectKeyValue,
     }
   // not a list, no relation, is required => the raw type
   | (_, false, None, true) => {
@@ -213,6 +220,7 @@ let toNamedArgumentImpl: Prisma.field => namedArgumentArgs = field => {
       namedArgumentType: `${type_}`,
       objectType: `${type_}`,
       objectKey,
+      objectKeyValue,
     }
 
   // required non-list relation field
@@ -221,13 +229,15 @@ let toNamedArgumentImpl: Prisma.field => namedArgumentArgs = field => {
       namedArgumentType: `${type_}`,
       objectType: `${force_relation(field)[2]}.WhereUniqueInput.t`,
       objectKey,
+      objectKeyValue,
     }
   // required list relation field
   | (_, true, Some(_), true) => {
-      namedArgument: `: ${type_}`,
-      namedArgumentType: `${type_}`,
+      namedArgument: `: array<${type_}>`,
+      namedArgumentType: `array<${type_}>`,
       objectType: `array<${force_relation(field)[1]}.WhereUniqueInput.t>`,
       objectKey,
+      objectKeyValue,
     }
   }
 }
@@ -254,3 +264,10 @@ let toObjectType: Prisma.field => string = field => {
   let parsed = toNamedArgumentImpl(field)
   `${parsed.objectKey}: ${parsed.objectType}`
 }
+
+/**
+The assignment in the actual construction of the record type
+*/
+@genType
+let toObjectKeyValue: Prisma.field => string = field =>
+  `${toNamedArgumentImpl(field).objectKeyValue}`

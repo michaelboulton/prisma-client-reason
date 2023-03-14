@@ -21,10 +21,10 @@ export interface IPrisma_field {
   readonly relationName?: string
 };
 
-export const toObjectKeyValue: (field:IPrisma_field) => string = helpersBS.toObjectKeyValue;
-
 export const toNamedArgument: (field:IPrisma_field) => string = helpersBS.toNamedArgument;
 
 export const toNamedArgumentType: (field:IPrisma_field) => string = helpersBS.toNamedArgumentType;
 
 export const toObjectType: (field:IPrisma_field) => string = helpersBS.toObjectType;
+
+export const toObjectKeyValue: (field:IPrisma_field) => string = helpersBS.toObjectKeyValue;
