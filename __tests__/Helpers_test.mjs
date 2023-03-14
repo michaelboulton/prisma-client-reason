@@ -137,7 +137,7 @@ Jest.describe("argument printers with relations", (function (param) {
         var testExamples = $$Array.to_list([{
                 input: toField(undefined, "Cool", true, false, undefined, "One", "CoolToOne", undefined),
                 namedArgument: "~cool: One.WhereUniqueInput.t",
-                toNamedArgumentType: "~cool: One.WhereUniqueInput.t=?",
+                toNamedArgumentType: "~cool: One.WhereUniqueInput.t",
                 toObjectKeyValue: "cool: cool",
                 toObjectType: "@as(\"Cool\") cool: One.WhereUniqueInput.t"
               }]);

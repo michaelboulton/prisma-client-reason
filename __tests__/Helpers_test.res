@@ -136,7 +136,7 @@ describe("argument printers with relations", () => {
         (),
       ),
       "namedArgument": "~cool: One.WhereUniqueInput.t",
-      "toNamedArgumentType": "~cool: One.WhereUniqueInput.t=?",
+      "toNamedArgumentType": "~cool: One.WhereUniqueInput.t",
       "toObjectKeyValue": "cool: cool",
       "toObjectType": `@as("Cool") cool: One.WhereUniqueInput.t`,
     },

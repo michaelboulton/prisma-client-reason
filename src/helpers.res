@@ -177,9 +177,9 @@ let toObjectType: Prisma.field => string = field => {
   | (_, _, Some(_), false) =>
     `${type_}`
   // List relation which is required implies a many-to-many link
-  | (_, true, Some(_), _) => `array<${force_relation()[2]}.WhereUniqueInput.t>`
+  | (_, true, Some(_), _) => `array<${force_relation()[1]}.WhereUniqueInput.t>`
   // Non-list relation which is required implies a 'unique' selection on the relation
-  | (_, false, Some(_), _) => `${force_relation()[1]}.WhereUniqueInput.t`
+  | (_, false, Some(_), _) => `${force_relation()[2]}.WhereUniqueInput.t`
   /* *************** */
   | _ => raise(Todo)
   }
@@ -202,7 +202,6 @@ type namedArgumentArgs = {
   type_: string,
 }
 
-@genType
 let toNamedArgumentImpl: Prisma.field => namedArgumentArgs = field => {
   let type_ = toPrimitiveType(field)
 
@@ -213,10 +212,19 @@ let toNamedArgumentImpl: Prisma.field => namedArgumentArgs = field => {
       type_: "bool=?",
     }
   // Non-required relation field => Optional
-  | (_, _, Some(_), false) => {arg: `=?`, type_: `${type_}=?`}
+  | (_, _, Some(_), false) => {
+      arg: `=?`,
+      type_: `${type_}=?`,
+    }
   // whether its a list or not, if it has no relation, not required => optional
-  | (_, true, None, false) => {arg: `=?`, type_: `array<${type_}>=?`}
-  | (_, false, None, false) => {arg: `=?`, type_: `${type_}=?`}
+  | (_, true, None, false) => {
+      arg: `=?`,
+      type_: `array<${type_}>=?`,
+    }
+  | (_, false, None, false) => {
+      arg: `=?`,
+      type_: `${type_}=?`,
+    }
   // list, no relation, is required => array
   | (_, true, None, true) => {
       arg: `: array<${type_}>`,
@@ -224,6 +232,12 @@ let toNamedArgumentImpl: Prisma.field => namedArgumentArgs = field => {
     }
   // not a list, no relation, is required => the raw type
   | (_, false, None, true) => {
+      arg: `: ${type_}`,
+      type_: `${type_}`,
+    }
+
+  // required non-list relation field
+  | (_, false, Some(_), true) => {
       arg: `: ${type_}`,
       type_: `${type_}`,
     }
@@ -235,51 +249,12 @@ let toNamedArgumentImpl: Prisma.field => namedArgumentArgs = field => {
 The argument in the implementation of the make function
 */
 @genType
-let toNamedArgument: Prisma.field => string = field => {
+let toNamedArgument: Prisma.field => string = field =>
   `~${toObjectKeyName(field)}${toNamedArgumentImpl(field).arg}`
-
-  /*
-  let type_ = toPrimitiveType(field)
-
-  switch (field.isList, field.relationName, field.isRequired) {
-  // If it's not required, this can be introspected from the actual type specified in toNamedArgumentType
-  | (_, _, false)
-  | // If it's a list but has no relation, also can just be introspected
-  (true, None, _) =>
-    `~${toObjectKeyName(field)}=?`
-  // If it's not a list, use the type from toPrimitiveType which takes relations into account
-  | (false, _, _) => `~${toObjectKeyName(field)}: ${type_}`
-  // If it's a list and has a relation, it should be an array
-  | (true, Some(_), _) => `~${toObjectKeyName(field)}: array<${type_}>`
-  }
- */
-}
 
 /**
 The argument in the interface of the make function
 */
 @genType
-let toNamedArgumentType: Prisma.field => string = field => {
+let toNamedArgumentType: Prisma.field => string = field =>
   `~${toObjectKeyName(field)}: ${toNamedArgumentImpl(field).type_}`
-
-  /*
-  let type_ = toPrimitiveType(field)
-
-  `~${toObjectKeyName(field)}: ` ++
-  switch (field.type_, field.isList, field.relationName, field.isRequired) {
-  // list, no relation, is required => array
-  | (_, true, None, true) => `array<${type_}>`
-  // not a list, no relation, is required => the raw type
-  | (_, false, None, true) => `${type_}`
-  // whether its a list or not, if it has no relation, not required => optional
-  | (_, false, None, false) => `array<${type_}>=?`
-  | (_, true, None, false) => `${type_}=?`
-  // If it has a relation and its a boolean type, it's a "select" field, so it's just a bool
-  | ("Boolean", _, Some(_), _) => `bool=?`
-  // Non-required relation field => Optional
-  | (_, _, Some(_), false) => `${type_}=?`
-  // Anything else => raw type
-  | _ => `${type_}=?`
-  }
- */
-}

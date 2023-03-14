@@ -167,7 +167,7 @@ function toObjectType(field) {
   if (exit === 1) {
     recordType = match$5 ? (
         match$2 === "FindMany" ? "" + type_ + "" : (
-            match$3 ? "array<" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 2) + ".WhereUniqueInput.t>" : "" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1) + ".WhereUniqueInput.t"
+            match$3 ? "array<" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1) + ".WhereUniqueInput.t>" : "" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 2) + ".WhereUniqueInput.t"
           )
       ) : "" + type_ + "";
   }
@@ -204,39 +204,45 @@ function toNamedArgumentImpl(field) {
   } else {
     exit = 2;
   }
-  if (exit === 2 && match$2 !== undefined) {
-    if (match$3) {
-      throw {
-            RE_EXN_ID: Todo,
-            Error: new Error()
-          };
-    }
+  if (exit === 2 && match$2 !== undefined && !match$3) {
     return {
             arg: "=?",
             type_: "" + type_ + "=?"
           };
   }
-  if (match$1) {
-    if (match$3) {
+  if (!match$1) {
+    if (match$2 !== undefined) {
       return {
-              arg: ": array<" + type_ + ">",
-              type_: "array<" + type_ + ">"
+              arg: ": " + type_ + "",
+              type_: "" + type_ + ""
+            };
+    } else if (match$3) {
+      return {
+              arg: ": " + type_ + "",
+              type_: "" + type_ + ""
             };
     } else {
       return {
               arg: "=?",
-              type_: "array<" + type_ + ">=?"
+              type_: "" + type_ + "=?"
             };
     }
-  } else if (match$3) {
+  }
+  if (match$2 !== undefined) {
+    throw {
+          RE_EXN_ID: Todo,
+          Error: new Error()
+        };
+  }
+  if (match$3) {
     return {
-            arg: ": " + type_ + "",
-            type_: "" + type_ + ""
+            arg: ": array<" + type_ + ">",
+            type_: "array<" + type_ + ">"
           };
   } else {
     return {
             arg: "=?",
-            type_: "" + type_ + "=?"
+            type_: "array<" + type_ + ">=?"
           };
   }
 }
