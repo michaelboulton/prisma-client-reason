@@ -2,7 +2,7 @@
 
 import * as Jest from "@glennsl/rescript-jest/src/jest.mjs";
 import * as $$Array from "rescript/lib/es6/array.js";
-import * as Helpers from "../src/helpers.js";
+import * as Helpers from "../src/helpers.mjs";
 
 function toField(kindOpt, nameOpt, isRequiredOpt, isListOpt, isUniqueOpt, type_Opt, relationName, param) {
   var kind = kindOpt !== undefined ? kindOpt : "object";

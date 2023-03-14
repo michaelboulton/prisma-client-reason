@@ -1,6 +1,6 @@
 import { DMMF } from '@prisma/generator-helper';
 import { codeBlock } from 'common-tags';
-import { upperFirst, camelCase } from 'lodash';
+import { upperFirst, camelCase } from 'lodash-es';
 
 class EnumGenerator {
   private enum: DMMF.SchemaEnum;
@@ -16,7 +16,7 @@ class EnumGenerator {
 
     return codeBlock`
       module ${this.enum.name} = {
-        type t = 
+        type t =
         ${this.enum.values.map(makeValue).join('\n')};
       };
     `;

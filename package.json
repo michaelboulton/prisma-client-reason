@@ -17,7 +17,7 @@
     "clean:node_modules": "rm -rf node_modules",
     "clean:build": "rm -rf dist",
     "start": "nodemon",
-    "build": "rescript && tsc && cp src/helpers.js dist/ && chmod +x ./dist/generator.js",
+    "build": "rescript && tsc && cp src/helpers.mjs dist/ && chmod +x ./dist/generator.js",
     "tsc:start": "tsc -w",
     "rebuild": "run-s clean:build build",
     "res:start": "rescript build -w",
@@ -30,6 +30,7 @@
     "common-tags": "^1.8.2",
     "fs-extra": "^11.1.0",
     "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "reason-promise": "^1.1.5"
   },
   "devDependencies": {

@@ -36,12 +36,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import { join } from 'path';
-import { ensureDir, writeFile } from 'fs-extra';
+import { ensureDir, outputFile } from 'fs-extra/esm';
 import { generatorHandler } from '@prisma/generator-helper';
 import ExternalsGenerator from './Externals.js';
 import ModelGenerator from './Generators/Model.js';
 import EnumGenerator from './Generators/Enum.js';
-var clientVersion = require('../package.json').version;
+var clientVersion = "2";
 generatorHandler({
     onManifest: function () {
         return {
@@ -67,7 +67,7 @@ generatorHandler({
                     return [4, ensureDir(options.generator.output.value)];
                 case 1:
                     _a.sent();
-                    return [4, writeFile(join(options.generator.output.value, "".concat(options.generator.config.name, ".res")), "\n        type prismaClient;\n\n        type batchPayload = {\n          // https://rescript-lang.org/docs/manual/latest/shared-data-types\n          count: float,\n        }\n\n        /* ENUMS */\n        ".concat(options.dmmf.schema.enumTypes.prisma
+                    return [4, outputFile(join(options.generator.output.value, "".concat(options.generator.config.name, ".res")), "\n        type prismaClient;\n\n        type batchPayload = {\n          // https://rescript-lang.org/docs/manual/latest/shared-data-types\n          count: float,\n        }\n\n        /* ENUMS */\n        ".concat(options.dmmf.schema.enumTypes.prisma
                             .map(function (type) { return new EnumGenerator(type).generate(); })
                             .join('\n\n'), "\n\n        module rec ").concat(options.dmmf.datamodel.models
                             .map(function (model) { return new ModelGenerator(model).generate(); })

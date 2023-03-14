@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { join } from 'path';
-import { ensureDir, writeFile } from 'fs-extra';
+// @ts-ignore
+import { ensureDir,  outputFile } from 'fs-extra/esm';
 import { generatorHandler } from '@prisma/generator-helper';
 
 import ExternalsGenerator from './Externals.js';
@@ -9,7 +10,9 @@ import ExternalsGenerator from './Externals.js';
 import ModelGenerator from './Generators/Model.js';
 import EnumGenerator from './Generators/Enum.js';
 
-const clientVersion = require('../package.json').version;
+import * as p from "../package.json"
+// @ts-ignore
+const clientVersion = p.version
 
 generatorHandler({
   onManifest() {
@@ -32,7 +35,7 @@ generatorHandler({
     const externals = new ExternalsGenerator(options.dmmf.datamodel.models);
 
     await ensureDir(options.generator.output.value);
-    await writeFile(
+    await outputFile(
       join(
         options.generator.output.value,
         `${options.generator.config.name}.res`,
