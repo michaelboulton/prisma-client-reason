@@ -68,11 +68,12 @@ function toPrimitiveType(field) {
   switch (match$1) {
     case "Boolean" :
         return "bool";
+    case "DateTime" :
+        return "Js.Date.t";
     case "Float" :
         return "float";
     case "Int" :
         return "int";
-    case "DateTime" :
     case "String" :
         return "string";
     default:

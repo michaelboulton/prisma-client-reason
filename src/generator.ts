@@ -2,7 +2,7 @@
 
 import { join } from 'path';
 // @ts-ignore
-import { ensureDir,  outputFile } from 'fs-extra/esm';
+import { ensureDir, outputFile } from 'fs-extra/esm';
 import { generatorHandler } from '@prisma/generator-helper';
 
 import ExternalsGenerator from './Externals.js';
@@ -11,9 +11,9 @@ import ModelGenerator from './Generators/Model.js';
 import EnumGenerator from './Generators/Enum.js';
 
 // @ts-ignore
-import * as p from "../package.json" assert { type: "json" };
+import * as p from '../package.json' assert { type: 'json' };
 // @ts-ignore
-const clientVersion = p.version
+const clientVersion = p.version;
 
 generatorHandler({
   onManifest() {
@@ -41,6 +41,7 @@ generatorHandler({
         options.generator.output.value,
         `${options.generator.config.name}.res`,
       ),
+      // language=Rescript
       `
         type prismaClient;
 

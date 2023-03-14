@@ -83,7 +83,7 @@ let toPrimitiveType = (field: Prisma.field) => {
   | (_, "Float") => "float"
   | (_, "String") => "string"
   | (_, "Boolean") => "bool"
-  | (_, "DateTime") => "string"
+  | (_, "DateTime") => "Js.Date.t"
   | (None, _) =>
     raise(BadPrimitiveType({message: `No relation but found unknown type: ${field.type_}`}))
   | (Some(relationName), "FindMany") => {
