@@ -56,6 +56,10 @@ function relatedTo(field) {
               }));
 }
 
+function force_relation(field) {
+  return Belt_Result.getExn(relatedTo(field));
+}
+
 var BadPrimitiveType = /* @__PURE__ */Caml_exceptions.create("Helpers.BadPrimitiveType");
 
 function toPrimitiveType(field) {
@@ -135,45 +139,6 @@ function annotation(field) {
   
 }
 
-var Todo = /* @__PURE__ */Caml_exceptions.create("Helpers.Todo");
-
-function toObjectType(field) {
-  var keyName = Lodash.camelCase(field.name);
-  var match = field.isRequired;
-  var match$1 = annotation(field);
-  var key = match ? (
-      match$1 !== undefined ? "" + match$1 + " " + keyName + "" : "" + keyName + ""
-    ) : (
-      match$1 !== undefined ? "" + match$1 + " " + keyName + "?" : "" + keyName + "?"
-    );
-  var type_ = toPrimitiveType(field);
-  var match$2 = field.type;
-  var match$3 = field.isList;
-  var match$4 = field.relationName;
-  var match$5 = field.isRequired;
-  var recordType;
-  var exit = 0;
-  if (match$3) {
-    if (match$4 !== undefined) {
-      exit = 1;
-    } else {
-      recordType = match$5 ? "array<" + type_ + ">" : "array<" + type_ + ">";
-    }
-  } else if (match$4 !== undefined) {
-    exit = 1;
-  } else {
-    recordType = match$5 ? "" + type_ + "" : "" + type_ + "";
-  }
-  if (exit === 1) {
-    recordType = match$5 ? (
-        match$2 === "FindMany" ? "" + type_ + "" : (
-            match$3 ? "array<" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1) + ".WhereUniqueInput.t>" : "" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 2) + ".WhereUniqueInput.t"
-          )
-      ) : "" + type_ + "";
-  }
-  return "" + key + ": " + recordType + "";
-}
-
 function toObjectKeyValue(field) {
   var match = field.isRequired;
   if (match) {
@@ -184,75 +149,120 @@ function toObjectKeyValue(field) {
 }
 
 function toNamedArgumentImpl(field) {
+  var keyName = Lodash.camelCase(field.name);
+  var match = field.isRequired;
+  var match$1 = annotation(field);
+  var objectKey = match ? (
+      match$1 !== undefined ? "" + match$1 + " " + keyName + "" : "" + keyName + ""
+    ) : (
+      match$1 !== undefined ? "" + match$1 + " " + keyName + "?" : "" + keyName + "?"
+    );
   var type_ = toPrimitiveType(field);
-  var match = field.type;
-  var match$1 = field.isList;
-  var match$2 = field.relationName;
-  var match$3 = field.isRequired;
+  var match$2 = field.type;
+  var match$3 = field.isList;
+  var match$4 = field.relationName;
+  var match$5 = field.isRequired;
   var exit = 0;
-  if (match === "Boolean" && match$1) {
-    if (match$2 !== undefined) {
-      if (match$3) {
+  switch (match$2) {
+    case "Boolean" :
+        if (match$3 && match$4 !== undefined) {
+          if (match$5) {
+            return {
+                    namedArgument: "bool=?",
+                    namedArgumentType: "bool=?",
+                    objectType: "bool",
+                    objectKey: objectKey
+                  };
+          }
+          
+        } else {
+          exit = 2;
+        }
+        break;
+    case "FindMany" :
+        if (!(match$4 !== undefined && !match$5)) {
+          exit = 2;
+        }
+        break;
+    default:
+      exit = 2;
+  }
+  if (exit === 2) {
+    if (match$3) {
+      if (match$4 === undefined) {
+        if (match$5) {
+          return {
+                  namedArgument: ": array<" + type_ + ">",
+                  namedArgumentType: "array<" + type_ + ">",
+                  objectType: "array<" + type_ + ">",
+                  objectKey: objectKey
+                };
+        } else {
+          return {
+                  namedArgument: "=?",
+                  namedArgumentType: "array<" + type_ + ">=?",
+                  objectType: "array<" + type_ + ">",
+                  objectKey: objectKey
+                };
+        }
+      }
+      if (match$5) {
         return {
-                arg: "bool=?",
-                type_: "bool=?"
+                namedArgument: ": " + type_ + "",
+                namedArgumentType: "" + type_ + "",
+                objectType: "array<" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 1) + ".WhereUniqueInput.t>",
+                objectKey: objectKey
               };
       }
-      exit = 2;
-    }
-    
-  } else {
-    exit = 2;
-  }
-  if (exit === 2 && match$2 !== undefined && !match$3) {
-    return {
-            arg: "=?",
-            type_: "" + type_ + "=?"
-          };
-  }
-  if (!match$1) {
-    if (match$2 !== undefined) {
-      return {
-              arg: ": " + type_ + "",
-              type_: "" + type_ + ""
-            };
-    } else if (match$3) {
-      return {
-              arg: ": " + type_ + "",
-              type_: "" + type_ + ""
-            };
+      
     } else {
-      return {
-              arg: "=?",
-              type_: "" + type_ + "=?"
-            };
+      if (match$4 === undefined) {
+        if (match$5) {
+          return {
+                  namedArgument: ": " + type_ + "",
+                  namedArgumentType: "" + type_ + "",
+                  objectType: "" + type_ + "",
+                  objectKey: objectKey
+                };
+        } else {
+          return {
+                  namedArgument: "=?",
+                  namedArgumentType: "" + type_ + "=?",
+                  objectType: "" + type_ + "",
+                  objectKey: objectKey
+                };
+        }
+      }
+      if (match$5) {
+        return {
+                namedArgument: ": " + type_ + "",
+                namedArgumentType: "" + type_ + "",
+                objectType: "" + Caml_array.get(Belt_Result.getExn(relatedTo(field)), 2) + ".WhereUniqueInput.t",
+                objectKey: objectKey
+              };
+      }
+      
     }
   }
-  if (match$2 !== undefined) {
-    throw {
-          RE_EXN_ID: Todo,
-          Error: new Error()
+  return {
+          namedArgument: "=?",
+          namedArgumentType: "" + type_ + "=?",
+          objectType: "" + type_ + "",
+          objectKey: objectKey
         };
-  }
-  if (match$3) {
-    return {
-            arg: ": array<" + type_ + ">",
-            type_: "array<" + type_ + ">"
-          };
-  } else {
-    return {
-            arg: "=?",
-            type_: "array<" + type_ + ">=?"
-          };
-  }
 }
 
 function toNamedArgument(field) {
-  return "~" + Lodash.camelCase(field.name) + "" + toNamedArgumentImpl(field).arg + "";
+  return "~" + Lodash.camelCase(field.name) + "" + toNamedArgumentImpl(field).namedArgument + "";
 }
 
 function toNamedArgumentType(field) {
-  return "~" + Lodash.camelCase(field.name) + ": " + toNamedArgumentImpl(field).type_ + "";
+  return "~" + Lodash.camelCase(field.name) + ": " + toNamedArgumentImpl(field).namedArgumentType + "";
+}
+
+function toObjectType(field) {
+  var parsed = toNamedArgumentImpl(field);
+  return "" + parsed.objectKey + ": " + parsed.objectType + "";
 }
 
 export {
@@ -260,15 +270,15 @@ export {
   Lodash$1 as Lodash,
   ok_or ,
   relatedTo ,
+  force_relation ,
   BadPrimitiveType ,
   toPrimitiveType ,
   toObjectKeyName ,
   annotation ,
-  Todo ,
-  toObjectType ,
   toObjectKeyValue ,
   toNamedArgumentImpl ,
   toNamedArgument ,
   toNamedArgumentType ,
+  toObjectType ,
 }
 /* lodash Not a pure module */

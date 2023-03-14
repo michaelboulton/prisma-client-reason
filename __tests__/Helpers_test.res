@@ -140,6 +140,21 @@ describe("argument printers with relations", () => {
       "toObjectKeyValue": "cool: cool",
       "toObjectType": `@as("Cool") cool: One.WhereUniqueInput.t`,
     },
+    {
+      // Relation and required, list _from this field to another model_
+      "input": toField(
+        ~isList=true,
+        ~isRequired=true,
+        ~name="Cool",
+        ~type_="One",
+        ~relationName="CoolToOne",
+        (),
+      ),
+      "namedArgument": "~cool: One.WhereUniqueInput.t",
+      "toNamedArgumentType": "~cool: One.WhereUniqueInput.t",
+      "toObjectKeyValue": "cool: cool",
+      "toObjectType": `@as("Cool") cool: array<Cool.WhereUniqueInput.t>`,
+    },
   ])
 
   testAllJson("named argument", testExamples, test => {

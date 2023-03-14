@@ -134,13 +134,22 @@ Jest.describe("argument printers without relations", (function (param) {
       }));
 
 Jest.describe("argument printers with relations", (function (param) {
-        var testExamples = $$Array.to_list([{
+        var testExamples = $$Array.to_list([
+              {
                 input: toField(undefined, "Cool", true, false, undefined, "One", "CoolToOne", undefined),
                 namedArgument: "~cool: One.WhereUniqueInput.t",
                 toNamedArgumentType: "~cool: One.WhereUniqueInput.t",
                 toObjectKeyValue: "cool: cool",
                 toObjectType: "@as(\"Cool\") cool: One.WhereUniqueInput.t"
-              }]);
+              },
+              {
+                input: toField(undefined, "Cool", true, true, undefined, "One", "CoolToOne", undefined),
+                namedArgument: "~cool: One.WhereUniqueInput.t",
+                toNamedArgumentType: "~cool: One.WhereUniqueInput.t",
+                toObjectKeyValue: "cool: cool",
+                toObjectType: "@as(\"Cool\") cool: array<Cool.WhereUniqueInput.t>"
+              }
+            ]);
         Jest.testAllJson("named argument", testExamples, (function (test) {
                 return Jest.Expect.toBe(Jest.Expect.expect(Helpers.toNamedArgument(test.input)), test.namedArgument);
               }));

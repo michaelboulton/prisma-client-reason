@@ -67,6 +67,10 @@ let relatedTo = (field: Prisma.field) => {
   })
 }
 
+let force_relation = field => {
+  relatedTo(field)->Belt.Result.getExn
+}
+
 exception BadPrimitiveType({message: string})
 
 /**
@@ -139,54 +143,6 @@ let annotation = (field: Prisma.field) =>
     None
   }
 
-exception Todo
-
-/**
-Returns the type of the field in the object
-*/
-@genType
-let toObjectType: Prisma.field => string = field => {
-  let keyName = toObjectKeyName(field)
-
-  let key = switch (field.isRequired, annotation(field)) {
-  | (false, Some(a)) => `${a} ${keyName}?`
-  | (true, Some(a)) => `${a} ${keyName}`
-  | (false, None) => `${keyName}?`
-  | (true, None) => `${keyName}`
-  }
-
-  let type_ = toPrimitiveType(field)
-
-  let force_relation = () => {
-    relatedTo(field)->Belt.Result.getExn
-  }
-
-  let recordType = switch (field.type_, field.isList, field.relationName, field.isRequired) {
-  // Non-required list => optional array
-  | (_, true, None, false) => `array<${type_}>`
-  // required list => array
-  | (_, true, None, true) => `array<${type_}>`
-  // non-required non-list => optional type is taken care of in the key
-  | (_, false, None, false) => `${type_}`
-  // required non-list => raw type
-  | (_, false, None, true) => `${type_}`
-  /* *************** */
-  // A not required relation implies, or a 'FindMany', implies a 'select' field.
-  // Note these two cases come from different contexts.
-  | ("FindMany", _, Some(_), _)
-  | (_, _, Some(_), false) =>
-    `${type_}`
-  // List relation which is required implies a many-to-many link
-  | (_, true, Some(_), _) => `array<${force_relation()[1]}.WhereUniqueInput.t>`
-  // Non-list relation which is required implies a 'unique' selection on the relation
-  | (_, false, Some(_), _) => `${force_relation()[2]}.WhereUniqueInput.t`
-  /* *************** */
-  | _ => raise(Todo)
-  }
-
-  `${key}: ${recordType}`
-}
-
 /**
 The assignment in the actual construction of the record type
 */
@@ -198,50 +154,81 @@ let toObjectKeyValue: Prisma.field => string = field =>
   }
 
 type namedArgumentArgs = {
-  arg: string,
-  type_: string,
+  namedArgument: string,
+  namedArgumentType: string,
+  objectType: string,
+  objectKey: string,
 }
 
 let toNamedArgumentImpl: Prisma.field => namedArgumentArgs = field => {
+  let keyName = toObjectKeyName(field)
+  let objectKey = switch (field.isRequired, annotation(field)) {
+  | (false, Some(a)) => `${a} ${keyName}?`
+  | (true, Some(a)) => `${a} ${keyName}`
+  | (false, None) => `${keyName}?`
+  | (true, None) => `${keyName}`
+  }
+
   let type_ = toPrimitiveType(field)
 
   switch (field.type_, field.isList, field.relationName, field.isRequired) {
   // If it has a relation and its a boolean type, it's a "select" field, so it's just a bool
   | ("Boolean", true, Some(_), true) => {
-      arg: "bool=?",
-      type_: "bool=?",
+      namedArgument: "bool=?",
+      namedArgumentType: "bool=?",
+      objectType: "bool",
+      objectKey,
     }
   // Non-required relation field => Optional
+  | ("FindMany", _, Some(_), false)
   | (_, _, Some(_), false) => {
-      arg: `=?`,
-      type_: `${type_}=?`,
+      namedArgument: `=?`,
+      namedArgumentType: `${type_}=?`,
+      objectType: `${type_}`,
+      objectKey,
     }
   // whether its a list or not, if it has no relation, not required => optional
   | (_, true, None, false) => {
-      arg: `=?`,
-      type_: `array<${type_}>=?`,
+      namedArgument: `=?`,
+      namedArgumentType: `array<${type_}>=?`,
+      objectType: `array<${type_}>`,
+      objectKey,
     }
   | (_, false, None, false) => {
-      arg: `=?`,
-      type_: `${type_}=?`,
+      namedArgument: `=?`,
+      namedArgumentType: `${type_}=?`,
+      objectType: `${type_}`,
+      objectKey,
     }
   // list, no relation, is required => array
   | (_, true, None, true) => {
-      arg: `: array<${type_}>`,
-      type_: `array<${type_}>`,
+      namedArgument: `: array<${type_}>`,
+      namedArgumentType: `array<${type_}>`,
+      objectType: `array<${type_}>`,
+      objectKey,
     }
   // not a list, no relation, is required => the raw type
   | (_, false, None, true) => {
-      arg: `: ${type_}`,
-      type_: `${type_}`,
+      namedArgument: `: ${type_}`,
+      namedArgumentType: `${type_}`,
+      objectType: `${type_}`,
+      objectKey,
     }
 
   // required non-list relation field
   | (_, false, Some(_), true) => {
-      arg: `: ${type_}`,
-      type_: `${type_}`,
+      namedArgument: `: ${type_}`,
+      namedArgumentType: `${type_}`,
+      objectType: `${force_relation(field)[2]}.WhereUniqueInput.t`,
+      objectKey,
     }
-  | _ => raise(Todo)
+  // required list relation field
+  | (_, true, Some(_), true) => {
+      namedArgument: `: ${type_}`,
+      namedArgumentType: `${type_}`,
+      objectType: `array<${force_relation(field)[1]}.WhereUniqueInput.t>`,
+      objectKey,
+    }
   }
 }
 
@@ -250,11 +237,20 @@ The argument in the implementation of the make function
 */
 @genType
 let toNamedArgument: Prisma.field => string = field =>
-  `~${toObjectKeyName(field)}${toNamedArgumentImpl(field).arg}`
+  `~${toObjectKeyName(field)}${toNamedArgumentImpl(field).namedArgument}`
 
 /**
 The argument in the interface of the make function
 */
 @genType
 let toNamedArgumentType: Prisma.field => string = field =>
-  `~${toObjectKeyName(field)}: ${toNamedArgumentImpl(field).type_}`
+  `~${toObjectKeyName(field)}: ${toNamedArgumentImpl(field).namedArgumentType}`
+
+/**
+Returns the type of the field in the object
+*/
+@genType
+let toObjectType: Prisma.field => string = field => {
+  let parsed = toNamedArgumentImpl(field)
+  `${parsed.objectKey}: ${parsed.objectType}`
+}
