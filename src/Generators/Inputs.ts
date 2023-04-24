@@ -122,6 +122,46 @@ class InputsGenerator {
     };
   };
 
+  private CreateLinkArgs = () => {
+    /* Eg:
+    type OrderCreateNestedManyWithoutOrderedFromInput {
+      create?: OrderCreateWithoutOrderedFromInput | List<OrderCreateWithoutOrderedFromInput> | OrderUncheckedCreateWithoutOrderedFromInput | List<OrderUncheckedCreateWithoutOrderedFromInput>
+      connectOrCreate?: OrderCreateOrConnectWithoutOrderedFromInput | List<OrderCreateOrConnectWithoutOrderedFromInput>
+      createMany?: OrderCreateManyOrderedFromInputEnvelope
+      connect?: OrderWhereUniqueInput | List<OrderWhereUniqueInput>
+    }
+    */
+    const model: DMMF.Model = this.model;
+    return {
+      rei: codeBlock`
+        type t = {
+          create: option<array<${model.name}.CreateInput.t>>,
+          connect: option<array<${model.name}.WhereUniqueInput.t>>,
+        };
+
+        let make: (
+          ~create: array<${model.name}.CreateInput.t>=?,
+          ~connect: array<${model.name}.WhereUniqueInput.t>=?,
+          unit
+        ) => t;
+      `,
+      re: codeBlock`
+        type t = {
+          create: option<array<${model.name}.CreateInput.t>>,
+          connect: option<array<${model.name}.WhereUniqueInput.t>>,
+        };
+        let make = (
+          ~create=?,
+          ~connect=?,
+          (),
+        ) => {
+          create: create,
+          connect: connect,
+        };
+      `,
+    };
+  };
+
   private CreateArgs = () => {
     const model: DMMF.Model = this.model;
     return {
@@ -602,6 +642,9 @@ class InputsGenerator {
         and CreateArgs: {
           ${this.CreateArgs().rei}
         }
+        and CreateLinkArgs: {
+          ${this.CreateLinkArgs().rei}
+        }
         and UpdateArgs: {
           ${this.UpdateArgs().rei}
         }
@@ -620,14 +663,13 @@ class InputsGenerator {
         and Select: {
           ${this.Select().rei}
         }
-        ${
-          this.hasRelations
-            ? `
+        ${this.hasRelations
+          ? `
               and Include: {
                 ${this.Include().rei}
               }
               `
-            : ''
+          : ''
         }
         and WhereInput: {
           ${this.WhereInput().rei}
@@ -657,6 +699,11 @@ class InputsGenerator {
           ${this.CreateArgs().rei}
         } = {
           ${this.CreateArgs().re}
+        }
+        and CreateLinkArgs: {
+          ${this.CreateLinkArgs().rei}
+        } = {
+          ${this.CreateLinkArgs().re}
         }
         and UpdateArgs: {
           ${this.UpdateArgs().rei}
@@ -688,16 +735,15 @@ class InputsGenerator {
         } = {
           ${this.Select().re}
         }
-        ${
-          this.hasRelations
-            ? `
+        ${this.hasRelations
+          ? `
               and Include: {
                 ${this.Include().rei}
               } = {
                 ${this.Include().re}
               }
               `
-            : ''
+          : ''
         }
         and WhereInput: {
           ${this.WhereInput().rei}
