@@ -116,7 +116,7 @@ function toPrimitiveType(field) {
         }
         var r = Caml_array.get(matches, 1);
         if (r === field.type) {
-          return "" + r + ".WhereUniqueInput.t";
+          return "" + r + ".CreateLinkArgs.t";
         } else {
           return "" + field.type + ".WhereUniqueInput.t";
         }
