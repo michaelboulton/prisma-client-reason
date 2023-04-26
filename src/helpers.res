@@ -121,7 +121,7 @@ let toPrimitiveType = (field: Prisma.field) => {
 
       // FIXME: This can sometimes be CreateLinkArgs but it needs to pass context (is it a query or a create/update) down to this function so it can actually tell which one to use.
       if r == field.type_ {
-        `${r}.WhereUniqueInput.t`
+        `${r}.CreateLinkArgs.t`
       } else {
         `${field.type_}.WhereUniqueInput.t`
       }
