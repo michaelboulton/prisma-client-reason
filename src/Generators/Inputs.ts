@@ -200,6 +200,39 @@ class InputsGenerator {
     };
   };
 
+  private CreateManyArgs = () => {
+    const model: DMMF.Model = this.model;
+    return {
+      rei: codeBlock`
+        type t = {
+          data: array<CreateInput.t>,
+          skipDuplicates: option<bool>,
+        };
+
+        let make: (
+          ~data: array<CreateInput.t>,
+          ~skipDuplicates: bool=?,
+          unit,
+        ) => t;
+      `,
+      re: codeBlock`
+        type t = {
+          data: array<CreateInput.t>,
+          skipDuplicates: option<bool>,
+        };
+
+        let make = (
+          ~data,
+          ~skipDuplicates=?,
+          (),
+        ) => {
+          skipDuplicates: skipDuplicates,
+          data: data
+        };
+      `,
+    };
+  };
+
   private UpdateArgs = () => {
     const model: DMMF.Model = this.model;
     return {
@@ -648,6 +681,9 @@ class InputsGenerator {
         and UpdateArgs: {
           ${this.UpdateArgs().rei}
         }
+        and CreateManyArgs: {
+          ${this.CreateManyArgs().rei}
+        }
         and UpdateManyArgs: {
           ${this.UpdateManyArgs().rei}
         }
@@ -709,6 +745,11 @@ class InputsGenerator {
           ${this.UpdateArgs().rei}
         } = {
           ${this.UpdateArgs().re}
+        }
+        and CreateManyArgs: {
+          ${this.CreateManyArgs().rei}
+        } = {
+          ${this.CreateManyArgs().re}
         }
         and UpdateManyArgs: {
           ${this.UpdateManyArgs().rei}
