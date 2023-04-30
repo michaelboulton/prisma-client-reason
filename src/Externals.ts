@@ -86,6 +86,19 @@ class ExternalsGenerator {
     `;
   };
 
+  private createMany = (model: DMMF.Model) => {
+    const hasRelations = model.fields.some((field) => field.kind === 'object');
+    return codeBlock`
+      module CreateMany: {
+        type t = ${model.name}.CreateManyArgs.t;
+
+        @send @scope("${model.name.toLowerCase()}")
+        external make: (prismaClient, t) =>
+          promise<array<${model.name}.t>> = "createMany";
+      };
+    `;
+  };
+
   private update = (model: DMMF.Model) => {
     return codeBlock`
 
@@ -150,6 +163,7 @@ class ExternalsGenerator {
                   ${this.deleteMany(model)}
                   ${this.count(model)}
                   ${this.create(model)}
+                  ${this.createMany(model)}
                 }
               `;
             })
