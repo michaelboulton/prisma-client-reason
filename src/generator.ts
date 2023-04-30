@@ -50,6 +50,10 @@ generatorHandler({
           count: float,
         }
 
+        type multipleCreated = {
+            count: int,
+        }
+
         /* ENUMS */
         ${options.dmmf.schema.enumTypes.prisma
           .map((type) => new EnumGenerator(type).generate())

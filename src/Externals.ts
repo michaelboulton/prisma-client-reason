@@ -94,7 +94,7 @@ class ExternalsGenerator {
 
         @send @scope("${model.name.toLowerCase()}")
         external make: (prismaClient, t) =>
-          promise<array<${model.name}.t>> = "createMany";
+          promise<multipleCreated> = "createMany";
       };
     `;
   };
