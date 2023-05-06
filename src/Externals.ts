@@ -1,5 +1,6 @@
 import { DMMF } from '@prisma/generator-helper';
 import { codeBlock } from 'common-tags';
+import { toObjectName } from './helpers.gen.js';
 
 class ExternalsGenerator {
   private models: DMMF.Model[];
@@ -39,7 +40,7 @@ class ExternalsGenerator {
           where: ${model.name}.WhereUniqueInput.t
         };
 
-        @send @scope("${model.name.toLowerCase()}")
+        @send @scope("${toObjectName(model)}")
         external make: (prismaClient, t) =>
           promise<Js.Nullable.t<${model.name}.t>> = "findFirst";
       };
@@ -62,7 +63,7 @@ class ExternalsGenerator {
           last: option<int>,
         };
 
-        @send @scope("${model.name.toLowerCase()}")
+        @send @scope("${toObjectName(model)}")
         external make: (prismaClient, t) =>
           promise<array<${model.name}.t>> = "findMany";
       };
@@ -79,7 +80,7 @@ class ExternalsGenerator {
           data: ${model.name}.CreateInput.t
         };
 
-        @send @scope("${model.name.toLowerCase()}")
+        @send @scope("${toObjectName(model)}")
         external make: (prismaClient, t) =>
           promise<${model.name}.t> = "create";
       };
@@ -92,7 +93,7 @@ class ExternalsGenerator {
       module CreateMany: {
         type t = ${model.name}.CreateManyArgs.t;
 
-        @send @scope("${model.name.toLowerCase()}")
+        @send @scope("${toObjectName(model)}")
         external make: (prismaClient, t) =>
           promise<multipleCreated> = "createMany";
       };
@@ -131,7 +132,7 @@ class ExternalsGenerator {
           where?: option<${model.name}.WhereInput.t>,
         };
 
-        @send @scope("${model.name.toLowerCase()}")
+        @send @scope("${toObjectName(model)}")
         external make: (prismaClient, t) =>
           promise<batchPayload> = "deleteMany";
       };

@@ -21,6 +21,8 @@ export interface IPrisma_field {
   readonly relationName?: string
 };
 
+export interface IPrisma_model { readonly name: string; readonly fields: IPrisma_field[] };
+
 export const toNamedArgument: (field:IPrisma_field) => string = helpersBS.toNamedArgument;
 
 export const toNamedArgumentType: (field:IPrisma_field) => string = helpersBS.toNamedArgumentType;
@@ -28,3 +30,5 @@ export const toNamedArgumentType: (field:IPrisma_field) => string = helpersBS.to
 export const toObjectType: (field:IPrisma_field) => string = helpersBS.toObjectType;
 
 export const toObjectKeyValue: (field:IPrisma_field) => string = helpersBS.toObjectKeyValue;
+
+export const toObjectName: (model:IPrisma_model) => string = helpersBS.toObjectName;

@@ -271,6 +271,10 @@ function toObjectKeyValue(field) {
   return "" + toNamedArgumentImpl(field).objectKeyValue + "";
 }
 
+function toObjectName(model) {
+  return Lodash.camelCase(model.name);
+}
+
 export {
   Prisma ,
   Lodash$1 as Lodash,
@@ -286,5 +290,6 @@ export {
   toNamedArgumentType ,
   toObjectType ,
   toObjectKeyValue ,
+  toObjectName ,
 }
 /* lodash Not a pure module */

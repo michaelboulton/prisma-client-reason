@@ -17,6 +17,11 @@ module Prisma = {
     relationToFields?: array<string>,
     relationName?: string,
   }
+
+  type model = {
+    name: string,
+    fields: array<field>,
+  }
 }
 
 /** Re-exports of lodash functions */
@@ -272,3 +277,13 @@ The assignment in the actual construction of the record type
 @genType
 let toObjectKeyValue: Prisma.field => string = field =>
   `${toNamedArgumentImpl(field).objectKeyValue}`
+
+/**
+turns string into the expected name, basically camelcase, assumes your object name has a not-silly name
+*/
+@genType
+let toObjectName: Prisma.model => string = model => {
+  /* open Js.String2 */
+  /* substring(model.name, ~to_=1, ~from=0)->toLowerCase ++ substringToEnd(model.name, ~from=1) */
+  Lodash.camelCase(model.name)
+}
